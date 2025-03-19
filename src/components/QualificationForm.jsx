@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProgressBar from './ProgressBar';
 import ContactForm from './ContactForm';
@@ -23,6 +23,22 @@ const QualificationForm = () => {
   const [isQualified, setIsQualified] = useState(null);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [validationError, setValidationError] = useState(null);
+  const [formError, setFormError] = useState(null);
+  const [csrfToken, setCsrfToken] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Fetch CSRF token on component mount
+  useEffect(() => {
+    // This would normally fetch from your server
+    // Instead, we'll simulate it with a random token
+    const generateToken = () => {
+      return Math.random().toString(36).substring(2, 15) + 
+             Math.random().toString(36).substring(2, 15);
+    };
+    
+    setCsrfToken(generateToken());
+  }, []);
+  
   const [questions, setQuestions] = useState([
     {
       id: 'accidentDate',
@@ -34,6 +50,16 @@ const QualificationForm = () => {
         const date = new Date(value);
         const oneYearAgo = new Date();
         oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        
+        // Check if date is valid
+        if (isNaN(date.getTime())) return false;
+        
+        // Check if date is in the future
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (date > today) return false;
+        
+        // Check if date is too old (more than 1 year)
         return date >= oneYearAgo;
       }
     },
@@ -48,7 +74,26 @@ const QualificationForm = () => {
           id: 'medicalTreatmentDate',
           question: 'Approximately when did you first receive medical treatment?',
           helpText: 'An approximate date is fine.',
-          type: 'date'
+          type: 'date',
+          validation: (value, formData) => {
+            if (!value || !formData.accidentDate) return false;
+            
+            const treatmentDate = new Date(value);
+            const accidentDate = new Date(formData.accidentDate);
+            
+            // Check if date is valid
+            if (isNaN(treatmentDate.getTime())) return false;
+            
+            // Check if treatment date is in the future
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (treatmentDate > today) return false;
+            
+            // Treatment must be after accident date
+            if (treatmentDate < accidentDate) return false;
+            
+            return true;
+          }
         }
       }
     },
@@ -105,6 +150,7 @@ const QualificationForm = () => {
 
   const handleInputChange = (questionId, value) => {
     setValidationError(null);
+    setFormError(null);
     
     setFormData(prev => {
       if (questionId === 'insuranceCoverage') {
@@ -121,37 +167,49 @@ const QualificationForm = () => {
   };
 
   const checkQualification = () => {
-    // Check if accident was within last 12 months
-    const accidentDate = new Date(formData.accidentDate);
-    const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-    const isRecentAccident = accidentDate >= oneYearAgo;
+    try {
+      // Check if accident was within last 12 months
+      const accidentDate = new Date(formData.accidentDate);
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+      const isRecentAccident = accidentDate >= oneYearAgo;
 
-    // Check if medical treatment was within 60 days of accident
-    let isMedicalTreatmentTimely = true;
-    if (formData.medicalTreatment && formData.medicalTreatmentDate) {
-      const treatmentDate = new Date(formData.medicalTreatmentDate);
-      const accidentDateObj = new Date(formData.accidentDate);
-      const sixtyDaysAfterAccident = new Date(accidentDateObj);
-      sixtyDaysAfterAccident.setDate(accidentDateObj.getDate() + 60);
-      isMedicalTreatmentTimely = treatmentDate <= sixtyDaysAfterAccident;
+      // Check if medical treatment was within 60 days of accident
+      let isMedicalTreatmentTimely = true;
+      if (formData.medicalTreatment && formData.medicalTreatmentDate) {
+        const treatmentDate = new Date(formData.medicalTreatmentDate);
+        const accidentDateObj = new Date(formData.accidentDate);
+        
+        // Ensure dates are valid
+        if (isNaN(treatmentDate.getTime()) || isNaN(accidentDateObj.getTime())) {
+          throw new Error("Invalid date format");
+        }
+        
+        const sixtyDaysAfterAccident = new Date(accidentDateObj);
+        sixtyDaysAfterAccident.setDate(accidentDateObj.getDate() + 60);
+        isMedicalTreatmentTimely = treatmentDate <= sixtyDaysAfterAccident;
+      }
+
+      // Check if at least one insurance coverage is selected
+      const hasInsurance = Object.values(formData.insuranceCoverage).some(v => v === true);
+
+      // Check if user qualifies based on all criteria
+      const qualified = 
+        isRecentAccident && 
+        formData.medicalTreatment === true && 
+        isMedicalTreatmentTimely &&
+        (formData.atFault === false || formData.atFault === null) && 
+        (formData.hasAttorney === 'no' || formData.hasAttorney === 'yes-change') &&
+        formData.movingViolation === false &&
+        formData.priorSettlement === false &&
+        hasInsurance;
+
+      setIsQualified(qualified);
+    } catch (error) {
+      console.error("Error during qualification check:", error);
+      setFormError("An error occurred while processing your information. Please try again.");
+      setIsQualified(false);
     }
-
-    // Check if at least one insurance coverage is selected
-    const hasInsurance = Object.values(formData.insuranceCoverage).some(v => v === true);
-
-    // Check if user qualifies based on all criteria
-    const qualified = 
-      isRecentAccident && 
-      formData.medicalTreatment === true && 
-      isMedicalTreatmentTimely &&
-      (formData.atFault === false || formData.atFault === null) && 
-      (formData.hasAttorney === 'no' || formData.hasAttorney === 'yes-change') &&
-      formData.movingViolation === false &&
-      formData.priorSettlement === false &&
-      hasInsurance;
-
-    setIsQualified(qualified);
   };
 
   const handleNext = () => {
@@ -165,14 +223,16 @@ const QualificationForm = () => {
     } else if (currentQuestion.type === 'select') {
       isValid = formData[currentQuestion.id] !== null;
     } else if (currentQuestion.type === 'date') {
-      isValid = formData[currentQuestion.id] && (!currentQuestion.validation || currentQuestion.validation(formData[currentQuestion.id]));
+      isValid = formData[currentQuestion.id] && 
+                (!currentQuestion.validation || 
+                 currentQuestion.validation(formData[currentQuestion.id], formData));
     } else if (currentQuestion.type === 'checkbox') {
       isValid = currentQuestion.validation(formData[currentQuestion.id]);
     }
     
     if (!isValid) {
       // Show validation error
-      setValidationError('Please answer this question to continue.');
+      setValidationError('Please provide a valid answer to continue.');
       return;
     }
     
@@ -215,26 +275,44 @@ const QualificationForm = () => {
   const handleBack = () => {
     setCurrentStep(prev => Math.max(0, prev - 1));
     setValidationError(null);
+    setFormError(null);
   };
 
-  const handleSubmitContactInfo = (contactInfo) => {
-    // Here you would typically send the data to your backend
-    console.log('Submitting form data:', { ...formData, contactInfo });
-    setFormSubmitted(true);
-    
-    // In a real implementation, you would send this data to your server
-    // fetch('/api/submit-case', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ ...formData, contactInfo })
-    // })
-    // .then(response => response.json())
-    // .then(data => {
-    //   setFormSubmitted(true);
-    // })
-    // .catch(error => {
-    //   console.error('Error submitting form:', error);
-    // });
+  const handleSubmitContactInfo = async (contactInfo) => {
+    try {
+      setIsLoading(true);
+      
+      // Here you would normally implement rate limiting logic on the server
+      
+      // This would be your API call with CSRF token
+      // const response = await fetch('/api/submit-case', {
+      //   method: 'POST',
+      //   headers: { 
+      //     'Content-Type': 'application/json',
+      //     'X-CSRF-Token': csrfToken
+      //   },
+      //   body: JSON.stringify({ ...formData, contactInfo })
+      // });
+      
+      // if (!response.ok) throw new Error('Failed to submit form');
+      
+      // Simulate API call
+      console.log('Submitting form data with CSRF token:', { 
+        ...formData, 
+        contactInfo,
+        _csrf: csrfToken 
+      });
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setFormSubmitted(true);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setFormError("We couldn't submit your information. Please try again or contact support.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Render the current question
@@ -272,6 +350,8 @@ const QualificationForm = () => {
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 }`}
+                aria-pressed={formData[question.id] === option.value}
+                type="button"
               >
                 {option.label}
               </button>
@@ -287,11 +367,14 @@ const QualificationForm = () => {
               value={formData[question.id] || ''}
               max={new Date().toISOString().split('T')[0]}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              aria-invalid={question.validation && formData[question.id] && !question.validation(formData[question.id], formData)}
             />
-            {formData[question.id] && question.validation && !question.validation(formData[question.id]) && (
+            {formData[question.id] && question.validation && !question.validation(formData[question.id], formData) && (
               <p className="text-red-500 mt-2">
                 {question.id === 'accidentDate' 
-                  ? 'Your accident must have occurred within the last 12 months.'
+                  ? 'Your accident must have occurred within the last 12 months and not be in the future.'
+                  : question.id === 'medicalTreatmentDate'
+                  ? 'Treatment date must be after the accident date and not in the future.'
                   : 'Please enter a valid date.'}
               </p>
             )}
@@ -309,6 +392,8 @@ const QualificationForm = () => {
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 }`}
+                aria-pressed={formData[question.id] === option.value}
+                type="button"
               >
                 {option.label}
               </button>
@@ -341,7 +426,7 @@ const QualificationForm = () => {
         )}
         
         {validationError && (
-          <p className="text-red-500 mt-4">{validationError}</p>
+          <p className="text-red-500 mt-4" role="alert">{validationError}</p>
         )}
       </motion.div>
     );
@@ -349,6 +434,26 @@ const QualificationForm = () => {
 
   // Render results or contact form after all questions
   const renderResults = () => {
+    if (formError) {
+      return (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="p-6 bg-red-50 border-l-4 border-red-500 text-red-700 mb-6"
+          role="alert"
+        >
+          <h3 className="text-lg font-semibold mb-2">Error</h3>
+          <p>{formError}</p>
+          <button 
+            onClick={() => setFormError(null)}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </motion.div>
+      );
+    }
+    
     if (formSubmitted) {
       return (
         <motion.div
@@ -461,6 +566,7 @@ const QualificationForm = () => {
             <button
               onClick={handleBack}
               className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+              type="button"
             >
               Back
             </button>
@@ -471,6 +577,7 @@ const QualificationForm = () => {
           <button
             onClick={handleNext}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            type="button"
           >
             {currentStep === questions.length - 1 ? 'Submit' : 'Next'}
           </button>
