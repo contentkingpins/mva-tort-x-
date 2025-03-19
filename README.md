@@ -1,6 +1,6 @@
-# MVA Standard TortX
+# MVA Standard TortX - Claim Connectors
 
-A modern React application for car accident law firms, providing a comprehensive qualification form and client intake system.
+A modern React application for Claim Connectors, providing a comprehensive qualification form and client intake system.
 
 ## Features
 
@@ -31,8 +31,8 @@ A modern React application for car accident law firms, providing a comprehensive
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/yourusername/mva-standard-tortx.git
-   cd mva-standard-tortx
+   git clone https://github.com/contentkingpins/mva-tort-x-.git
+   cd mva-tort-x-
    ```
 
 2. Install dependencies
@@ -63,7 +63,7 @@ This builds the app for production to the `build` folder.
 
 ## Customization
 
-- Update the law firm information in `App.jsx`
+- Update the company information in `App.jsx`
 - Modify the qualification questions in `QualificationForm.jsx`
 - Adjust the trust elements in `TrustIndicators.jsx`
 - Update the compensation benefits in `CompensationBenefits.jsx`
@@ -74,11 +74,11 @@ This builds the app for production to the `build` folder.
 The application includes:
 - Semantic HTML structure
 - Proper meta tags in index.html
-- Structured data for legal services
+- Structured data for services
 - Open Graph and Twitter card meta tags
 - Mobile-friendly responsive design
 - Optimized content structure
 
 ## License
 
-MIT # mva-tort-x-
+MIT

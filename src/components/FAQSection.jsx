@@ -6,8 +6,8 @@ const FAQSection = () => {
 
   const faqs = [
     {
-      question: 'How much is my car accident case worth?',
-      answer: 'The value of your case depends on several factors, including the severity of your injuries, medical expenses, lost wages, property damage, and pain and suffering. Every case is unique, and our attorneys will evaluate your specific circumstances to provide a realistic assessment of potential compensation.'
+      question: 'How much is my accident case worth?',
+      answer: 'The value of your case depends on several factors, including the severity of your injuries, medical expenses, lost wages, property damage, and pain and suffering. Every case is unique, and our experts will evaluate your specific circumstances to provide a realistic assessment of potential compensation.'
     },
     {
       question: 'How long will it take to resolve my case?',
@@ -15,19 +15,19 @@ const FAQSection = () => {
     },
     {
       question: 'What if the accident was partially my fault?',
-      answer: 'Even if you were partially at fault, you may still be entitled to compensation. Many states follow comparative negligence rules, which allow you to recover damages reduced by your percentage of fault. Our attorneys can help determine how these laws apply to your situation.'
+      answer: 'Even if you were partially at fault, you may still be entitled to compensation. Many states follow comparative negligence rules, which allow you to recover damages reduced by your percentage of fault. Our team can help determine how these laws apply to your situation.'
     },
     {
-      question: 'Do I have to go to court for my car accident case?',
-      answer: 'Most car accident cases settle out of court through negotiations with insurance companies. However, if the other party refuses to offer fair compensation, we are fully prepared to take your case to trial to fight for what you deserve.'
+      question: 'Do I have to go to court for my accident case?',
+      answer: 'Most accident cases settle out of court through negotiations with insurance companies. However, if the other party refuses to offer fair compensation, we are fully prepared to take your case to trial to fight for what you deserve.'
     },
     {
-      question: 'How much do your attorneys charge?',
-      answer: 'We work on a contingency fee basis, which means you pay nothing upfront. We only get paid if we win your case, and our fee is a percentage of the settlement or verdict. This arrangement allows anyone to access quality legal representation regardless of financial situation.'
+      question: 'How much do your services cost?',
+      answer: 'We work on a contingency fee basis, which means you pay nothing upfront. We only get paid if we win your case, and our fee is a percentage of the settlement or verdict. This arrangement allows anyone to access quality representation regardless of financial situation.'
     },
     {
-      question: 'What should I do after a car accident?',
-      answer: 'Seek medical attention immediately, report the accident to police, exchange information with other drivers, document the scene with photos, notify your insurance company, and contact an attorney before giving statements to any insurance companies.'
+      question: 'What should I do after an accident?',
+      answer: 'Seek medical attention immediately, report the accident to proper authorities, exchange information with other involved parties, document the scene with photos, notify your insurance company, and contact us before giving statements to any insurance companies.'
     }
   ];
 

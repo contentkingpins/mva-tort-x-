@@ -3,18 +3,18 @@ import React from 'react';
 const TrustIndicators = () => {
   const testimonials = [
     {
-      quote: "After my accident, I was overwhelmed with medical bills and insurance calls. The legal team guided me through every step and secured a settlement that covered all my expenses.",
-      author: "J.S., Car Accident Client",
+      quote: "After my accident, I was overwhelmed with medical bills and insurance calls. The expert team guided me through every step and secured a settlement that covered all my expenses.",
+      author: "J.S., Accident Client",
       rating: 5
     },
     {
-      quote: "I was hesitant to pursue a claim, but I'm so glad I did. The attorneys were professional, responsive, and truly cared about my recovery.",
+      quote: "I was hesitant to pursue a claim, but I'm so glad I did. The specialists were professional, responsive, and truly cared about my recovery.",
       author: "M.R., Personal Injury Client",
       rating: 5
     },
     {
       quote: "The attention to detail and level of communication exceeded my expectations. They fought hard for me and it paid off.",
-      author: "T.K., Motor Vehicle Accident Client",
+      author: "T.K., Accident Client",
       rating: 5
     }
   ];
@@ -22,8 +22,8 @@ const TrustIndicators = () => {
   const badges = [
     { name: "A+ BBB Accreditation", icon: "shield-check" },
     { name: "10.0 Superb Rating", icon: "star" },
-    { name: "Top 100 Trial Lawyers", icon: "award" },
-    { name: "Million Dollar Advocates Forum", icon: "cash" }
+    { name: "Top 100 Claim Specialists", icon: "award" },
+    { name: "Million Dollar Results", icon: "cash" }
   ];
 
   return (

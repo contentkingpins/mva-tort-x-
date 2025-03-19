@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProgressBar from './ProgressBar';
 import ContactForm from './ContactForm';
-import TrustIndicators from './TrustIndicators';
-import CompensationBenefits from './CompensationBenefits';
-import FAQSection from './FAQSection';
 
 const QualificationForm = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -98,7 +95,7 @@ const QualificationForm = () => {
       helpText: 'Select all that apply. This helps us understand potential sources of recovery.',
       type: 'checkbox',
       options: [
-        { id: 'liability', label: 'The other driver\'s insurance' },
+        { id: 'liability', label: 'The other party\'s insurance' },
         { id: 'uninsured', label: 'Your Uninsured Motorist (UM) coverage' },
         { id: 'underinsured', label: 'Your Underinsured Motorist (UIM) coverage' }
       ],
@@ -442,48 +439,43 @@ const QualificationForm = () => {
   };
 
   return (
-    <div>
-      <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">
-          Free Case Evaluation
-        </h2>
-        
-        {currentStep < questions.length && (
-          <ProgressBar 
-            currentStep={currentStep} 
-            totalSteps={questions.length} 
-          />
-        )}
-        
-        <AnimatePresence mode="wait">
-          {currentStep < questions.length ? renderQuestion() : renderResults()}
-        </AnimatePresence>
-        
-        {currentStep < questions.length && (
-          <div className="flex justify-between mt-8">
-            {currentStep > 0 ? (
-              <button
-                onClick={handleBack}
-                className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                Back
-              </button>
-            ) : (
-              <div></div> // Empty div to maintain flex spacing
-            )}
-            
+    <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-2xl p-8 border border-gray-100">
+      <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">
+        Free Claim Evaluation
+      </h2>
+      
+      {currentStep < questions.length && (
+        <ProgressBar 
+          currentStep={currentStep} 
+          totalSteps={questions.length} 
+        />
+      )}
+      
+      <AnimatePresence mode="wait">
+        {currentStep < questions.length ? renderQuestion() : renderResults()}
+      </AnimatePresence>
+      
+      {currentStep < questions.length && (
+        <div className="flex justify-between mt-8">
+          {currentStep > 0 ? (
             <button
-              onClick={handleNext}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              onClick={handleBack}
+              className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
             >
-              {currentStep === questions.length - 1 ? 'Submit' : 'Next'}
+              Back
             </button>
-          </div>
-        )}
-      </div>
-      <TrustIndicators />
-      <CompensationBenefits />
-      <FAQSection />
+          ) : (
+            <div></div> // Empty div to maintain flex spacing
+          )}
+          
+          <button
+            onClick={handleNext}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            {currentStep === questions.length - 1 ? 'Submit' : 'Next'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

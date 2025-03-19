@@ -19,7 +19,7 @@ const CompensationBenefits = () => {
     },
     {
       title: "Property Damage",
-      description: "Reimbursement for repair or replacement of your vehicle and any other personal property damaged in the crash.",
+      description: "Reimbursement for repair or replacement of your property and any other personal belongings damaged in the accident.",
       icon: "car"
     }
   ];
@@ -32,7 +32,7 @@ const CompensationBenefits = () => {
             Compensation You Could Receive
           </h2>
           <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-            If you qualify, our legal team will pursue maximum compensation for all of your losses.
+            If you qualify, our expert team will pursue maximum compensation for all of your losses.
           </p>
         </div>
 
