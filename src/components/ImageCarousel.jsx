@@ -6,25 +6,25 @@ const ImageCarousel = () => {
   
   const images = [
     {
-      src: '/images/car-accident-1.jpg',
+      src: '/images/shutterstock_2310978881.jpg',
       alt: 'Car accident involving multiple vehicles',
       caption: 'Even in complex multi-vehicle accidents, we help you navigate the claims process',
       description: 'Don\'t face insurance companies alone. Our experts connect you with the right help.'
     },
     {
-      src: '/images/car-damage-2.jpg',
+      src: '/images/shutterstock_2465073405.jpg',
       alt: 'Person checking damage to their vehicle',
       caption: 'Dealing with vehicle damage after an accident?',
       description: 'We help you get fair compensation for repairs or replacement of your damaged property.'
     },
     {
-      src: '/images/driver-stressed-3.jpg',
+      src: '/images/shutterstock_2386561053.jpg',
       alt: 'Person on phone next to damaged car',
       caption: 'Feeling overwhelmed after your accident?',
       description: 'Our claim specialists guide you through every step of the process with compassion and expertise.'
     },
     {
-      src: '/images/traffic-rainy-4.jpg',
+      src: '/images/shutterstock_2594561519.jpg',
       alt: 'Traffic in rainy weather seen from inside car',
       caption: 'Accidents happen in challenging conditions',
       description: 'Whether it\'s bad weather or poor visibility, we understand the complexities of your claim.'

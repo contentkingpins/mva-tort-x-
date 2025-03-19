@@ -6,7 +6,7 @@ const HeroBanner = () => {
       <div className="absolute inset-0">
         <img
           className="w-full h-full object-cover"
-          src="/images/car-accident-1.jpg"
+          src="/images/shutterstock_2310978881.jpg"
           alt="Accident scene showing vehicles involved in collision"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 to-blue-700/70"></div>
