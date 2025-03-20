@@ -43,11 +43,14 @@ const SafetyTips = () => {
               While we're here to help when accidents happen, we also care about your safety. Follow these tips to reduce your risk on the road.
             </p>
             <div className="mt-6 relative rounded-xl overflow-hidden h-80 md:h-96 shadow-xl">
-              <img 
-                src="/images/shutterstock_40377937.jpg" 
-                alt="Driving in rainy weather" 
-                className="w-full h-full object-cover"
-              />
+              <div 
+                className="w-full h-full bg-blue-700 flex items-center justify-center"
+                style={{ backgroundImage: 'linear-gradient(135deg, #2563eb, #1e40af)' }}
+              >
+                <p className="text-white text-xl p-6 text-center font-medium">
+                  Safe driving saves lives
+                </p>
+              </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
                 <p className="text-white p-6 text-lg font-medium">
                   Adjust your driving for weather conditions
@@ -60,7 +63,8 @@ const SafetyTips = () => {
               {tips.map((tip, index) => (
                 <div 
                   key={index}
-                  className="premium-card touch-friendly-stack"
+                  className="premium-card touch-friendly-stack p-4 rounded-lg shadow-md"
+                  style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)' }}
                 >
                   <h3 className="text-lg font-semibold" style={{ color: 'var(--accent-primary)' }}>{tip.title}</h3>
                   <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>{tip.description}</p>
