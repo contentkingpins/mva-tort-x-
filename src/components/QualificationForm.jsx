@@ -30,6 +30,7 @@ const QualificationForm = () => {
   const [formError, setFormError] = useState(null);
   const [csrfToken, setCsrfToken] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [submissionResult, setSubmissionResult] = useState(null);
   
   // Fetch CSRF token on component mount
@@ -190,6 +191,49 @@ const QualificationForm = () => {
     });
   };
 
+  const handleNext = () => {
+    // Validate current question
+    const currentQuestion = questions[currentStep];
+    const value = formData[currentQuestion.id];
+    
+    if (currentQuestion.validation && !currentQuestion.validation(value)) {
+      setValidationError(`Please provide a valid ${currentQuestion.id}`);
+      return;
+    }
+    
+    // Start transition animation
+    setIsTransitioning(true);
+    
+    // Delay to allow animation to complete
+    setTimeout(() => {
+      if (currentStep < questions.length - 1) {
+        setCurrentStep(prev => prev + 1);
+      } else {
+        checkQualification();
+      }
+      
+      // End transition animation after a short delay
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 300);
+    }, 200);
+  };
+
+  const handleBack = () => {
+    // Start transition animation
+    setIsTransitioning(true);
+    
+    // Delay to allow animation to complete
+    setTimeout(() => {
+      setCurrentStep(prev => Math.max(0, prev - 1));
+      
+      // End transition animation after a short delay
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 300);
+    }, 200);
+  };
+
   const checkQualification = () => {
     try {
       // Check if accident was within last 12 months
@@ -236,75 +280,32 @@ const QualificationForm = () => {
     }
   };
 
-  const handleNext = () => {
-    const currentQuestion = questions[currentStep];
-    
-    // Validate current answer before proceeding
-    let isValid = false;
-    
-    if (currentQuestion.type === 'boolean') {
-      isValid = formData[currentQuestion.id] !== null;
-    } else if (currentQuestion.type === 'select') {
-      isValid = formData[currentQuestion.id] !== null;
-    } else if (currentQuestion.type === 'date') {
-      isValid = formData[currentQuestion.id] && 
-                (!currentQuestion.validation || 
-                 currentQuestion.validation(formData[currentQuestion.id], formData));
-    } else if (currentQuestion.type === 'checkbox') {
-      isValid = currentQuestion.validation(formData[currentQuestion.id]);
-    }
-    
-    if (!isValid) {
-      // Show validation error
-      setValidationError('Please provide a valid answer to continue.');
-      return;
-    }
-    
-    // Check if we should show a follow-up question
-    if (currentQuestion.followUp && currentQuestion.followUp.condition(formData[currentQuestion.id])) {
-      // Create a new questions array with the follow-up question inserted
-      const updatedQuestions = [...questions];
-      updatedQuestions.splice(currentStep + 1, 0, currentQuestion.followUp.question);
-      setQuestions(updatedQuestions);
-    }
-    
-    // Check if we should skip to results based on disqualifying answers
-    if (currentQuestion.type === 'boolean' && currentQuestion.reverseLogic) {
-      if (formData[currentQuestion.id] === true) {
-        // This is a disqualifying answer
-        checkQualification();
-        setCurrentStep(questions.length);
-        return;
+  const resetForm = () => {
+    setCurrentStep(0);
+    setFormData({
+      accidentDate: null,
+      medicalTreatment: null,
+      medicalTreatmentDate: null,
+      atFault: null,
+      hasAttorney: null,
+      movingViolation: null,
+      priorSettlement: null,
+      insuranceCoverage: {
+        liability: false,
+        uninsured: false,
+        underinsured: false
       }
-    } else if (currentQuestion.type === 'select') {
-      const selectedOption = currentQuestion.options.find(opt => opt.value === formData[currentQuestion.id]);
-      if (selectedOption && !selectedOption.isQualifying) {
-        // This is a disqualifying answer
-        checkQualification();
-        setCurrentStep(questions.length);
-        return;
-      }
-    }
-    
-    // If we're at the last question, evaluate qualification
-    if (currentStep === questions.length - 1) {
-      checkQualification();
-    }
-    
-    // Move to next question
-    setCurrentStep(prev => prev + 1);
-    setValidationError(null);
-  };
-
-  const handleBack = () => {
-    setCurrentStep(prev => Math.max(0, prev - 1));
-    setValidationError(null);
+    });
+    setIsQualified(null);
+    setFormSubmitted(false);
     setFormError(null);
+    setValidationError(null);
   };
 
   const handleSubmitContactInfo = async (contactInfo) => {
     try {
       setIsLoading(true);
+      setFormError(null);
       
       // Update context with contact information
       updateFormData({
@@ -363,23 +364,37 @@ const QualificationForm = () => {
 
   // Render the current question
   const renderQuestion = () => {
-    if (currentStep >= questions.length) {
-      return null;
-    }
-
     const question = questions[currentStep];
-
+    
+    // Determine if we're in a loading/transitioning state
+    const isInTransition = isLoading || isTransitioning;
+    
+    if (validationError) {
+      return (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="bg-red-50 border-l-4 border-red-500 p-4 mb-6"
+        >
+          <p className="text-red-700">{validationError}</p>
+        </motion.div>
+      );
+    }
+    
     return (
       <motion.div
-        key={question.id}
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -20 }}
-        className="mb-8"
+        key={`question-${currentStep}`}
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: isInTransition ? 0.5 : 1, x: 0 }}
+        exit={{ opacity: 0, x: -50 }}
+        transition={{ duration: 0.3 }}
+        className={`py-6 ${isInTransition ? 'pointer-events-none' : ''}`}
       >
-        <h3 className="text-xl font-semibold mb-2 text-gray-800">{question.question}</h3>
+        <h3 className="text-xl font-bold mb-3 text-gray-900">{question.question}</h3>
+        
         {question.helpText && (
-          <p className="text-sm text-gray-600 mb-4">{question.helpText}</p>
+          <p className="text-gray-600 mb-4">{question.helpText}</p>
         )}
         
         {question.type === 'boolean' && (
@@ -470,10 +485,6 @@ const QualificationForm = () => {
             ))}
           </div>
         )}
-        
-        {validationError && (
-          <p className="text-red-500 mt-4" role="alert">{validationError}</p>
-        )}
       </motion.div>
     );
   };
@@ -482,21 +493,20 @@ const QualificationForm = () => {
   const renderResults = () => {
     if (formError) {
       return (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="p-6 bg-red-50 border-l-4 border-red-500 text-red-700 mb-6"
-          role="alert"
-        >
-          <h3 className="text-lg font-semibold mb-2">Error</h3>
-          <p>{formError}</p>
-          <button 
+        <div className="bg-red-50 p-6 rounded-lg border-l-4 border-red-500 my-8">
+          <h3 className="text-xl font-bold text-red-700 mb-2">
+            Error
+          </h3>
+          <p className="text-red-700 mb-4">
+            {formError}
+          </p>
+          <button
             onClick={() => setFormError(null)}
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+            className="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-800 transition-colors"
           >
             Try Again
           </button>
-        </motion.div>
+        </div>
       );
     }
     
@@ -559,25 +569,7 @@ const QualificationForm = () => {
                   buttonText={`Call Us Now: ${formattedPhoneNumber}`}
                 />
                 <button
-                  onClick={() => {
-                    setCurrentStep(0);
-                    setFormData({
-                      accidentDate: null,
-                      medicalTreatment: null,
-                      medicalTreatmentDate: null,
-                      atFault: null,
-                      hasAttorney: null,
-                      movingViolation: null,
-                      priorSettlement: null,
-                      insuranceCoverage: {
-                        liability: false,
-                        uninsured: false,
-                        underinsured: false
-                      }
-                    });
-                    setIsQualified(null);
-                    setFormSubmitted(false);
-                  }}
+                  onClick={resetForm}
                   className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                 >
                   Start a New Evaluation
@@ -585,11 +577,18 @@ const QualificationForm = () => {
               </div>
             </div>
           ) : (
-            <ContactForm
-              onSubmit={handleSubmitContactInfo}
-              formError={formError}
-              csrfToken={csrfToken}
-            />
+            <div className={isLoading ? 'opacity-60 pointer-events-none' : ''}>
+              <ContactForm
+                onSubmit={handleSubmitContactInfo}
+                formError={formError}
+                csrfToken={csrfToken}
+              />
+              {isLoading && (
+                <div className="flex justify-center mt-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+              )}
+            </div>
           )}
         </div>
       );
@@ -611,24 +610,7 @@ const QualificationForm = () => {
               buttonText={`Call for Consultation: ${formattedPhoneNumber}`}
             />
             <button
-              onClick={() => {
-                setCurrentStep(0);
-                setFormData({
-                  accidentDate: null,
-                  medicalTreatment: null,
-                  medicalTreatmentDate: null,
-                  atFault: null,
-                  hasAttorney: null,
-                  movingViolation: null,
-                  priorSettlement: null,
-                  insuranceCoverage: {
-                    liability: false,
-                    uninsured: false,
-                    underinsured: false
-                  }
-                });
-                setIsQualified(null);
-              }}
+              onClick={resetForm}
               className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
             >
               Start a New Evaluation
@@ -658,6 +640,13 @@ const QualificationForm = () => {
         {currentStep < questions.length ? renderQuestion() : renderResults()}
       </AnimatePresence>
       
+      {/* Loading indicator only during transitions */}
+      {isTransitioning && currentStep < questions.length && (
+        <div className="flex justify-center mt-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      )}
+      
       {currentStep < questions.length && (
         <div className="flex justify-between mt-8">
           {currentStep > 0 ? (
@@ -665,6 +654,7 @@ const QualificationForm = () => {
               onClick={handleBack}
               className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
               type="button"
+              disabled={isTransitioning}
             >
               Back
             </button>
@@ -674,8 +664,9 @@ const QualificationForm = () => {
           
           <button
             onClick={handleNext}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className={`px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${isTransitioning ? 'opacity-70 cursor-not-allowed' : ''}`}
             type="button"
+            disabled={isTransitioning}
           >
             {currentStep === questions.length - 1 ? 'Submit' : 'Next'}
           </button>
