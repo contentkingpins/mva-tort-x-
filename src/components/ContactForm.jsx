@@ -59,6 +59,9 @@ const ContactForm = ({ onSubmit, simplified = false, formError = null, csrfToken
         email: contactInfo.email,
         phone: contactInfo.phone.replace(/\D/g, ''), // Clean phone number for API
         zip: contactInfo.zipCode,
+        // Add additional fields required by Pingtree API
+        mobile: contactInfo.phone.replace(/\D/g, ''), // Ensure mobile field is set
+        channel: "Website", // Default channel for Pingtree
       };
       
       updateFormData(contactData);
@@ -68,20 +71,24 @@ const ContactForm = ({ onSubmit, simplified = false, formError = null, csrfToken
   const validateForm = () => {
     const newErrors = {};
     
+    // First name validation - required for Pingtree
     if (!contactInfo.firstName.trim()) {
       newErrors.firstName = 'First name is required';
     }
     
+    // Last name validation - required for Pingtree
     if (!contactInfo.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
     }
     
+    // Email validation - required for Pingtree
     if (!contactInfo.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/^\S+@\S+\.\S+$/.test(contactInfo.email)) {
       newErrors.email = 'Email is invalid';
     }
     
+    // Phone validation - required for Pingtree as "mobile"
     if (!contactInfo.phone.trim()) {
       newErrors.phone = 'Phone number is required';
     } else {
@@ -91,6 +98,7 @@ const ContactForm = ({ onSubmit, simplified = false, formError = null, csrfToken
       }
     }
     
+    // ZIP code validation - important for determining incident_state
     if (!contactInfo.zipCode.trim()) {
       newErrors.zipCode = 'ZIP code is required';
     } else if (!/^\d{5}(-\d{4})?$/.test(contactInfo.zipCode)) {
@@ -107,7 +115,15 @@ const ContactForm = ({ onSubmit, simplified = false, formError = null, csrfToken
     if (validateForm()) {
       setIsSubmitting(true);
       try {
-        await onSubmit(contactInfo);
+        // Extract clean phone number for mobile field
+        const mobileNumber = contactInfo.phone.replace(/\D/g, '');
+        
+        // Pass all required Pingtree fields
+        await onSubmit({
+          ...contactInfo,
+          mobile: mobileNumber, // Ensure mobile field is set for Pingtree
+          channel: "Website", // Default channel
+        });
       } catch (error) {
         console.error('Error submitting form:', error);
         setErrors({ submit: 'Failed to submit form. Please try again.' });

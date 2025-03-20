@@ -4,6 +4,7 @@ import ProgressBar from './ProgressBar';
 import ContactForm from './ContactForm';
 import EnhancedClickToCall from './EnhancedClickToCall';
 import { useFormData } from '../context/FormDataContext';
+import { submitQualifiedLead } from '../utils/pingtreeAPI';
 
 const QualificationForm = () => {
   const { formData: contextFormData, updateFormData } = useFormData();
@@ -29,6 +30,7 @@ const QualificationForm = () => {
   const [formError, setFormError] = useState(null);
   const [csrfToken, setCsrfToken] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [submissionResult, setSubmissionResult] = useState(null);
   
   // Fetch CSRF token on component mount
   useEffect(() => {
@@ -310,26 +312,34 @@ const QualificationForm = () => {
         sourceId: `tortx_lead_${Date.now()}` // Generate a unique source ID
       });
       
-      // This would be your API call with CSRF token
-      // const response = await fetch('/api/submit-case', {
-      //   method: 'POST',
-      //   headers: { 
-      //     'Content-Type': 'application/json',
-      //     'X-CSRF-Token': csrfToken
-      //   },
-      //   body: JSON.stringify({ ...formData, contactInfo })
-      // });
-      
-      // Simulate API call
-      console.log('Submitting form data with CSRF token:', { 
+      // Log form submission (for debugging)
+      console.log('Submitting form data:', { 
         ...formData, 
-        contactInfo,
+        ...contactInfo,
         _csrf: csrfToken 
       });
       
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Check if we're in development mode
+      const isTestSubmission = process.env.NODE_ENV === 'development';
       
+      // Submit to Pingtree API
+      const apiResult = await submitQualifiedLead(
+        formData,
+        contactInfo,
+        isTestSubmission
+      );
+      
+      // Store the API result for later reference
+      setSubmissionResult(apiResult);
+      
+      // Check if submission was successful
+      if (apiResult.status === "error") {
+        console.error("Error submitting to Pingtree:", apiResult.message);
+        setFormError("We encountered an issue submitting your information. Please try again or call us directly.");
+        return;
+      }
+      
+      // Set form as submitted on success
       setFormSubmitted(true);
     } catch (error) {
       console.error('Error submitting form:', error);
