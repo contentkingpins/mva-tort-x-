@@ -43,14 +43,20 @@ const SafetyTips = () => {
               While we're here to help when accidents happen, we also care about your safety. Follow these tips to reduce your risk on the road.
             </p>
             <div className="mt-6 relative rounded-xl overflow-hidden h-80 md:h-96 shadow-xl">
-              <div 
-                className="w-full h-full bg-blue-700 flex items-center justify-center"
-                style={{ backgroundImage: 'linear-gradient(135deg, #2563eb, #1e40af)' }}
-              >
-                <p className="text-white text-xl p-6 text-center font-medium">
-                  Safe driving saves lives
-                </p>
-              </div>
+              <img 
+                src="/images/shutterstock_40377937.jpg" 
+                alt="Driving in rainy weather" 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.error('Failed to load safety image');
+                  e.target.style.display = 'none';
+                  const fallback = document.createElement('div');
+                  fallback.className = "w-full h-full bg-blue-700 flex items-center justify-center";
+                  fallback.style.backgroundImage = 'linear-gradient(135deg, #2563eb, #1e40af)';
+                  fallback.innerHTML = '<p class="text-white text-xl p-6 text-center font-medium">Safe driving saves lives</p>';
+                  e.target.parentNode.appendChild(fallback);
+                }}
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
                 <p className="text-white p-6 text-lg font-medium">
                   Adjust your driving for weather conditions
