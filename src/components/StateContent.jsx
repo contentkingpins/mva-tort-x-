@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useGeoLocation } from '../context/GeoLocationContext';
 import { trackStateEngagement, isStateSupported } from '../utils/geolocation';
+import EnhancedClickToCall from './EnhancedClickToCall';
 
 /**
  * Component to display state-specific content based on the user's location
@@ -21,11 +22,6 @@ const StateContent = () => {
     updateUserState(newStateCode);
   };
 
-  // Track calls from state component
-  const handleCall = () => {
-    trackStateEngagement(stateCode, 'call');
-  };
-
   if (isLoading) {
     return (
       <div className="p-4 text-center">
@@ -42,6 +38,18 @@ const StateContent = () => {
     South: ['DE', 'FL', 'GA', 'MD', 'NC', 'SC', 'VA', 'DC', 'WV', 'AL', 'KY', 'MS', 'TN', 'AR', 'LA', 'OK', 'TX'],
     West: ['AZ', 'CO', 'ID', 'MT', 'NV', 'NM', 'UT', 'WY', 'AK', 'CA', 'HI', 'OR', 'WA']
   };
+
+  // Format phone number for display
+  const phoneNumber = "8337156010";
+  const formatPhoneNumber = (phoneNumberString) => {
+    const cleaned = ('' + phoneNumberString).replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    if (match) {
+      return '(' + match[1] + ') ' + match[2] + '-' + match[3];
+    }
+    return phoneNumberString;
+  };
+  const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
 
   return (
     <div className="bg-white rounded-lg p-5 mb-6 border border-gray-100 shadow-sm">
@@ -84,18 +92,16 @@ const StateContent = () => {
           )}
         </div>
         
-        {/* Quick Call Section */}
+        {/* Quick Call Section - Using EnhancedClickToCall for Ringba integration */}
         <div className="ml-4 flex-shrink-0">
-          <a 
-            href="tel:833-715-6010" 
-            onClick={handleCall}
+          <EnhancedClickToCall
+            phoneNumber={phoneNumber}
+            formattedPhoneNumber={formattedPhoneNumber}
             className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-colors"
-          >
-            <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-            </svg>
-            Free Consult
-          </a>
+            showIcon={true}
+            iconClassName="h-4 w-4 mr-1"
+            buttonText="Free Consult"
+          />
         </div>
       </div>
       
