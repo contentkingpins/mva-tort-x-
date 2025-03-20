@@ -18,22 +18,12 @@ const SimpleHeader = ({ phoneNumber, formattedPhoneNumber }) => {
         margin: '0 auto',
         padding: '12px 16px',
         display: 'flex',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         alignItems: 'center'
       }}>
-        {/* Logo/Title */}
+        {/* Logo/Title - removed */}
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          {/* Desktop text */}
-          <div style={{
-            fontSize: '20px',
-            fontWeight: 'bold',
-            color: 'white',
-            display: 'block',
-            margin: 0
-          }}>
-            <span style={{ display: 'none' }} className="title-desktop">Claim Connectors</span>
-            <span style={{ display: 'block' }} className="title-mobile">CC</span>
-          </div>
+          {/* CC logo has been removed */}
         </div>
         
         {/* Action buttons */}
@@ -46,19 +36,19 @@ const SimpleHeader = ({ phoneNumber, formattedPhoneNumber }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '8px 12px',
+              padding: '8px 16px',
               backgroundColor: '#3b82f6',
               color: 'white',
               borderRadius: '6px',
               fontWeight: '500',
-              fontSize: '14px',
+              fontSize: '16px',
               boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
               textDecoration: 'none'
             }}
             iconClassName="phone-icon"
+            showIcon={true}
           >
-            <span style={{ display: 'none' }} className="phone-desktop">{formattedPhoneNumber}</span>
-            <span style={{ display: 'block' }} className="phone-mobile">Call</span>
+            Call
           </EnhancedClickToCall>
           
           {/* Free Evaluation button */}
@@ -68,12 +58,12 @@ const SimpleHeader = ({ phoneNumber, formattedPhoneNumber }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '8px 12px',
-              backgroundColor: '#1e40af',
+              padding: '8px 16px',
+              backgroundColor: '#1e3a8a',
               color: 'white',
               borderRadius: '6px',
               fontWeight: '500',
-              fontSize: '14px',
+              fontSize: '16px',
               boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
               textDecoration: 'none'
             }}
@@ -90,12 +80,6 @@ const SimpleHeader = ({ phoneNumber, formattedPhoneNumber }) => {
             margin-right: 4px;
             width: 16px;
             height: 16px;
-          }
-          @media (min-width: 640px) {
-            .title-desktop { display: block !important; }
-            .title-mobile { display: none !important; }
-            .phone-desktop { display: block !important; }
-            .phone-mobile { display: none !important; }
           }
         `
       }} />
