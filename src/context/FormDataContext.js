@@ -1,4 +1,6 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import { useGeoLocation } from './GeoLocationContext';
+import { getStateFromZip, trackStateEngagement } from '../utils/geolocation';
 
 // Create the context
 const FormDataContext = createContext();
@@ -14,6 +16,9 @@ export const useFormData = () => {
 
 // Provider component
 export const FormDataProvider = ({ children }) => {
+  // Get geolocation data
+  const { stateCode, stateName } = useGeoLocation();
+  
   const [formData, setFormData] = useState({
     // Form data
     accidentDate: null,
@@ -38,13 +43,30 @@ export const FormDataProvider = ({ children }) => {
     
     // Lead tracking info
     sourceId: `tortx_lead_${Date.now()}`,
-    incidentState: '',
+    incidentState: stateCode || '', // Initialize with detected state
+    detectedState: stateCode || '', // Store the originally detected state separately
     
     // Derived from form data
     callerid: '',
     claimantName: '',
     claimantEmail: '',
+    
+    // Partner tracking data
+    partnerId: 'B40i8',
+    geoTargeted: stateCode ? true : false // Flag if user was geo-targeted
   });
+
+  // Update form data when geolocation state changes
+  useEffect(() => {
+    if (stateCode) {
+      setFormData(prevData => ({
+        ...prevData,
+        incidentState: stateCode,
+        detectedState: stateCode,
+        geoTargeted: true
+      }));
+    }
+  }, [stateCode]);
 
   const updateFormData = (newData) => {
     setFormData(prevData => {
@@ -66,29 +88,63 @@ export const FormDataProvider = ({ children }) => {
         updatedData.callerid = newData.phone.replace(/\D/g, '');
       }
       
-      // Extract state from ZIP code if possible and incidentState is not set
-      if (newData.zip && !updatedData.incidentState) {
-        // This is a simplified mapping - a real implementation would use
-        // a geocoding service or ZIP code database
-        // Just mapping some example states
-        const zipPrefixToState = {
-          '01': 'MA', '02': 'MA', '03': 'NH', '04': 'NH',
-          '75': 'TX', '76': 'TX', '77': 'TX',
-          '80': 'CO', '81': 'CO',
-          '30': 'GA', '31': 'GA',
-          '35': 'AL', '36': 'AL'
-        };
-        
-        const zipPrefix = newData.zip.substring(0, 2);
-        updatedData.incidentState = zipPrefixToState[zipPrefix] || '';
+      // Extract state from ZIP code if possible
+      if (newData.zip) {
+        const zipState = getStateFromZip(newData.zip);
+        if (zipState) {
+          // If ZIP state is different from detected state, track this for analytics
+          if (prevData.detectedState && zipState !== prevData.detectedState) {
+            trackStateEngagement(zipState, 'zip_different_from_geo');
+          }
+          
+          updatedData.incidentState = zipState;
+        }
       }
       
       return updatedData;
     });
   };
 
+  // Track form submissions with state info
+  const submitFormWithStateData = async (endpoint, callback) => {
+    try {
+      // Track the submission event with state info
+      trackStateEngagement(formData.incidentState, 'form_submit');
+      
+      // Add timestamp
+      const submissionData = {
+        ...formData,
+        submissionTime: new Date().toISOString(),
+        userAgent: navigator.userAgent
+      };
+      
+      // Make the API call
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(submissionData)
+      });
+      
+      const data = await response.json();
+      
+      if (callback && typeof callback === 'function') {
+        callback(data);
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Form submission error:', error);
+      if (callback && typeof callback === 'function') {
+        callback({ error: true, message: error.message });
+      }
+      throw error;
+    }
+  };
+
   return (
-    <FormDataContext.Provider value={{ formData, updateFormData }}>
+    <FormDataContext.Provider value={{ formData, updateFormData, submitFormWithStateData }}>
       {children}
     </FormDataContext.Provider>
   );

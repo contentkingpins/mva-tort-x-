@@ -3,6 +3,8 @@ import { ErrorBoundary } from 'react-error-boundary';
 import HeroBanner from './components/HeroBanner';
 import EnhancedClickToCall from './components/EnhancedClickToCall';
 import { FormDataProvider } from './context/FormDataContext';
+import { GeoLocationProvider } from './context/GeoLocationContext';
+import StateContent from './components/StateContent';
 
 // Lazy load components to improve initial load performance
 const QualificationForm = lazy(() => import('./components/QualificationForm'));
@@ -90,151 +92,162 @@ function App() {
   }
 
   return (
-    <FormDataProvider>
-      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-        {/* Premium Header */}
-        <header className="bg-opacity-90 backdrop-blur-sm sticky top-0 z-50 border-b shadow-sm" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border-color)' }}>
-          <div className="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-            <h1 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
-              <span className="hidden sm:inline">Claim Connectors</span>
-              <span className="sm:hidden">CC</span>
-            </h1>
-            <div className="flex items-center space-x-3">
-              <EnhancedClickToCall 
-                phoneNumber={phoneNumber}
-                formattedPhoneNumber={formattedPhoneNumber}
-                className="flex items-center text-sm sm:text-base font-medium px-3 py-2 rounded-md shadow-sm text-white"
-                style={{ 
-                  backgroundColor: 'var(--gold-accent)',
-                  transition: `all var(--transition-speed)`
-                }}
-                iconClassName="w-4 h-4 mr-1 sm:mr-2"
-              >
-                <span className="hidden sm:inline">{formattedPhoneNumber}</span>
-                <span className="sm:hidden">Call</span>
-              </EnhancedClickToCall>
-              <a 
-                href="#qualification-form" 
-                className="text-sm sm:text-base font-medium px-3 py-2 rounded-md shadow-sm text-white"
-                style={{ 
-                  backgroundColor: 'var(--accent-primary)',
-                  transition: `all var(--transition-speed)`
-                }}
-              >
-                Free Evaluation
-              </a>
+    <GeoLocationProvider>
+      <FormDataProvider>
+        <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+          {/* Premium Header */}
+          <header className="bg-opacity-90 backdrop-blur-sm sticky top-0 z-50 border-b shadow-sm" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border-color)' }}>
+            <div className="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+              <h1 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+                <span className="hidden sm:inline">Claim Connectors</span>
+                <span className="sm:hidden">CC</span>
+              </h1>
+              <div className="flex items-center space-x-3">
+                <EnhancedClickToCall 
+                  phoneNumber={phoneNumber}
+                  formattedPhoneNumber={formattedPhoneNumber}
+                  className="flex items-center text-sm sm:text-base font-medium px-3 py-2 rounded-md shadow-sm text-white"
+                  style={{ 
+                    backgroundColor: 'var(--gold-accent)',
+                    transition: `all var(--transition-speed)`
+                  }}
+                  iconClassName="w-4 h-4 mr-1 sm:mr-2"
+                >
+                  <span className="hidden sm:inline">{formattedPhoneNumber}</span>
+                  <span className="sm:hidden">Call</span>
+                </EnhancedClickToCall>
+                <a 
+                  href="#qualification-form" 
+                  className="text-sm sm:text-base font-medium px-3 py-2 rounded-md shadow-sm text-white"
+                  style={{ 
+                    backgroundColor: 'var(--accent-primary)',
+                    transition: `all var(--transition-speed)`
+                  }}
+                >
+                  Free Evaluation
+                </a>
+              </div>
             </div>
-          </div>
-        </header>
-        
-        {/* Hero Banner */}
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
-          <HeroBanner phoneNumber={phoneNumber} formattedPhoneNumber={formattedPhoneNumber} />
-        </ErrorBoundary>
-        
-        <div className="max-w-7xl mx-auto py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
-          {/* Qualification Form */}
-          <div id="qualification-form" className="mb-12 sm:mb-20">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-center text-gray-900 mb-6 sm:mb-12">
-              Free Claim Evaluation
-            </h2>
+          </header>
+          
+          {/* Hero Banner */}
+          <ErrorBoundary FallbackComponent={ErrorFallback}>
+            <HeroBanner phoneNumber={phoneNumber} formattedPhoneNumber={formattedPhoneNumber} />
+          </ErrorBoundary>
+          
+          <div className="max-w-7xl mx-auto py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
+            {/* State-specific Content */}
+            <div className="mb-12">
+              <ErrorBoundary FallbackComponent={ErrorFallback}>
+                <Suspense fallback={<LoadingFallback />}>
+                  <StateContent />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+            
+            {/* Qualification Form */}
+            <div id="qualification-form" className="mb-12 sm:mb-20">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-center text-gray-900 mb-6 sm:mb-12">
+                Free Claim Evaluation
+              </h2>
+              <ErrorBoundary FallbackComponent={ErrorFallback}>
+                <Suspense fallback={<LoadingFallback />}>
+                  <QualificationForm />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+            
+            {/* Image Carousel */}
             <ErrorBoundary FallbackComponent={ErrorFallback}>
               <Suspense fallback={<LoadingFallback />}>
-                <QualificationForm />
+                <ImageCarousel />
               </Suspense>
             </ErrorBoundary>
           </div>
           
-          {/* Image Carousel */}
+          {/* Client Stories */}
           <ErrorBoundary FallbackComponent={ErrorFallback}>
             <Suspense fallback={<LoadingFallback />}>
-              <ImageCarousel />
+              <ClientStories />
             </Suspense>
           </ErrorBoundary>
-        </div>
-        
-        {/* Client Stories */}
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
-          <Suspense fallback={<LoadingFallback />}>
-            <ClientStories />
-          </Suspense>
-        </ErrorBoundary>
-        
-        {/* Trust Indicators */}
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
-          <Suspense fallback={<LoadingFallback />}>
-            <TrustIndicators />
-          </Suspense>
-        </ErrorBoundary>
-        
-        {/* Compensation Benefits */}
-        <div className="bg-white">
-          <div className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+          
+          {/* Trust Indicators */}
+          <ErrorBoundary FallbackComponent={ErrorFallback}>
+            <Suspense fallback={<LoadingFallback />}>
+              <TrustIndicators />
+            </Suspense>
+          </ErrorBoundary>
+          
+          {/* Compensation Benefits */}
+          <div className="bg-white">
+            <div className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+              <ErrorBoundary FallbackComponent={ErrorFallback}>
+                <Suspense fallback={<LoadingFallback />}>
+                  <CompensationBenefits />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          </div>
+          
+          {/* Safety Tips */}
+          <div id="safety-tips">
             <ErrorBoundary FallbackComponent={ErrorFallback}>
               <Suspense fallback={<LoadingFallback />}>
-                <CompensationBenefits />
+                <SafetyTips />
               </Suspense>
             </ErrorBoundary>
           </div>
-        </div>
-        
-        {/* Safety Tips */}
-        <div id="safety-tips">
-          <ErrorBoundary FallbackComponent={ErrorFallback}>
-            <Suspense fallback={<LoadingFallback />}>
-              <SafetyTips />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-        
-        {/* FAQ Section */}
-        <div className="bg-gray-50">
-          <div className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-            <ErrorBoundary FallbackComponent={ErrorFallback}>
-              <Suspense fallback={<LoadingFallback />}>
-                <FAQSection />
-              </Suspense>
-            </ErrorBoundary>
-          </div>
-        </div>
-        
-        {/* Footer */}
-        <footer className="bg-gray-900 text-white">
-          <div className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div>
-                <h3 className="text-xl font-bold mb-4">Claim Connectors</h3>
-                <p className="text-gray-300">
-                  Connecting accident victims with the right help to get the compensation they deserve.
-                </p>
-              </div>
-              <div>
-                <h3 className="text-xl font-bold mb-4">Quick Links</h3>
-                <ul className="space-y-2">
-                  <li><a href="#qualification-form" className="text-gray-300 hover:text-white transition-colors">Check Eligibility</a></li>
-                  <li><a href="#safety-tips" className="text-gray-300 hover:text-white transition-colors">Safety Resources</a></li>
-                  <li><a href="/privacy-policy" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</a></li>
-                  <li><a href="/terms-of-service" className="text-gray-300 hover:text-white transition-colors">Terms of Service</a></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-xl font-bold mb-4">Contact Us</h3>
-                <p className="text-gray-300 mb-2">Have questions? Our team is here to help.</p>
-                <EnhancedClickToCall 
-                  phoneNumber={phoneNumber}
-                  formattedPhoneNumber={formattedPhoneNumber}
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                  buttonText={`Call ${formattedPhoneNumber}`}
-                />
-              </div>
-            </div>
-            <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-400">
-              <p>© {new Date().getFullYear()} Claim Connectors. All rights reserved.</p>
+          
+          {/* FAQ Section */}
+          <div className="bg-gray-50">
+            <div className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+              <ErrorBoundary FallbackComponent={ErrorFallback}>
+                <Suspense fallback={<LoadingFallback />}>
+                  <FAQSection />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
-        </footer>
-      </div>
-    </FormDataProvider>
+          
+          {/* Footer */}
+          <footer className="bg-gray-900 text-white">
+            <div className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                  <h3 className="text-xl font-bold mb-4">Claim Connectors</h3>
+                  <p className="text-gray-300">
+                    Connecting accident victims with the right help to get the compensation they deserve.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-4">Quick Links</h3>
+                  <ul className="space-y-2">
+                    <li><a href="#qualification-form" className="text-gray-300 hover:text-white transition-colors">Check Eligibility</a></li>
+                    <li><a href="#safety-tips" className="text-gray-300 hover:text-white transition-colors">Safety Resources</a></li>
+                    <li><a href="/privacy-policy" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</a></li>
+                    <li><a href="/terms-of-service" className="text-gray-300 hover:text-white transition-colors">Terms of Service</a></li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-4">Contact Us</h3>
+                  <p className="text-gray-300 mb-2">Have questions? Our team is here to help.</p>
+                  <EnhancedClickToCall 
+                    phoneNumber={phoneNumber}
+                    formattedPhoneNumber={formattedPhoneNumber}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    buttonText={`Call ${formattedPhoneNumber}`}
+                  />
+                </div>
+              </div>
+              <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-400">
+                <p>© {new Date().getFullYear()} Claim Connectors. All rights reserved.</p>
+              </div>
+            </div>
+          </footer>
+        </div>
+      </FormDataProvider>
+    </GeoLocationProvider>
   );
 }
 
