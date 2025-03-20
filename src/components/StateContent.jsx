@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGeoLocation } from '../context/GeoLocationContext';
 import { trackStateEngagement, isStateSupported } from '../utils/geolocation';
 import EnhancedClickToCall from './EnhancedClickToCall';
@@ -8,11 +8,14 @@ import EnhancedClickToCall from './EnhancedClickToCall';
  */
 const StateContent = () => {
   const { stateCode, stateName, content, isLoading, isSupported, allStates, updateUserState } = useGeoLocation();
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   // Track state view on component mount
   useEffect(() => {
     if (!isLoading && stateCode) {
       trackStateEngagement(stateCode, 'view');
+      // Mark initial load as complete so we don't show the loading indicator again
+      setInitialLoadComplete(true);
     }
   }, [stateCode, isLoading]);
 
@@ -22,7 +25,8 @@ const StateContent = () => {
     updateUserState(newStateCode);
   };
 
-  if (isLoading) {
+  // Only show loading indicator on initial load, not during state changes
+  if (isLoading && !initialLoadComplete) {
     return (
       <div className="p-4 text-center">
         <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500 mx-auto"></div>

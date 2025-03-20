@@ -357,8 +357,8 @@ const QualificationForm = () => {
   const renderQuestion = () => {
     const question = questions[currentStep];
     
-    // Determine if we're in a loading/transitioning state
-    const isInTransition = isLoading || isTransitioning;
+    // Only apply transition styles, not loading opacity
+    const isInTransition = isTransitioning;
     
     if (validationError) {
       return (
@@ -688,8 +688,8 @@ const QualificationForm = () => {
         {currentStep < questions.length ? renderQuestion() : renderResults()}
       </AnimatePresence>
       
-      {/* Loading indicator only during active transitions */}
-      {isTransitioning && currentStep < questions.length && (
+      {/* Only show loading indicator when submitting the form, not during transitions */}
+      {isLoading && currentStep >= questions.length && (
         <div className="flex justify-center mt-4">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
         </div>

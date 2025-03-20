@@ -15,6 +15,7 @@ const ContactForm = ({ onSubmit, simplified = false, formError = null, csrfToken
   
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
   const [showFormError, setShowFormError] = useState(!!formError);
 
   // Update the form error display when props change
@@ -123,8 +124,12 @@ const ContactForm = ({ onSubmit, simplified = false, formError = null, csrfToken
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Don't try to submit again if already submitting
+    if (isSubmitting || formSubmitted) return;
+    
     if (validateForm()) {
-      setIsSubmitting(true);
+      setIsSubmitting(true); // Now we start the loading/submitting state
+      
       try {
         // Extract clean phone number for mobile field
         const mobileNumber = contactInfo.phone.replace(/\D/g, '');
@@ -135,12 +140,19 @@ const ContactForm = ({ onSubmit, simplified = false, formError = null, csrfToken
           mobile: mobileNumber, // Ensure mobile field is set for Pingtree
           channel: "Website", // Default channel
         });
+        
+        setFormSubmitted(true);
       } catch (error) {
         console.error('Error submitting form:', error);
         setErrors({ submit: 'Failed to submit form. Please try again.' });
         setShowFormError(true);
+        setFormSubmitted(false);
       } finally {
-        setIsSubmitting(false);
+        // Keep isSubmitting true if successfully submitted
+        // This prevents repeated submissions and keeps spinner visible
+        if (!formSubmitted) {
+          setIsSubmitting(false);
+        }
       }
     }
   };
@@ -386,7 +398,7 @@ const ContactForm = ({ onSubmit, simplified = false, formError = null, csrfToken
         
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || formSubmitted}
           aria-busy={isSubmitting}
           className={`w-full py-3 px-4 ${isSubmitting ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-4 focus:ring-blue-300 shadow-md`}
         >
