@@ -24,7 +24,7 @@ const ImageCarousel = () => {
       description: 'Our claim specialists guide you through every step of the process with compassion and expertise.'
     },
     {
-      src: '/images/shutterstock_2594561519.jpg',
+      src: '/images/rainy-driving.jpg',
       alt: 'Traffic in rainy weather seen from inside car',
       caption: 'Accidents happen in challenging conditions',
       description: 'Whether it\'s bad weather or poor visibility, we understand the complexities of your claim.'
