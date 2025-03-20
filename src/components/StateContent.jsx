@@ -29,8 +29,7 @@ const StateContent = () => {
   if (isLoading && !initialLoadComplete) {
     return (
       <div className="p-4 text-center">
-        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-        <p className="text-gray-500 text-sm mt-2">Personalizing your experience...</p>
+        <p className="text-gray-500">Personalizing your experience...</p>
       </div>
     );
   }

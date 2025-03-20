@@ -609,7 +609,7 @@ const QualificationForm = () => {
               />
               {isLoading && (
                 <div className="flex justify-center mt-4">
-                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                  <p className="text-blue-500 font-medium">Processing...</p>
                 </div>
               )}
             </div>
@@ -696,7 +696,7 @@ const QualificationForm = () => {
       {/* Only show loading indicator when submitting the form, not during transitions */}
       {isLoading && currentStep >= questions.length && (
         <div className="flex justify-center mt-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          <p className="text-blue-500 font-medium">Processing...</p>
         </div>
       )}
       
