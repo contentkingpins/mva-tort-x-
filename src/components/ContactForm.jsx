@@ -15,6 +15,12 @@ const ContactForm = ({ onSubmit, simplified = false, formError = null, csrfToken
   
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showFormError, setShowFormError] = useState(!!formError);
+
+  // Update the form error display when props change
+  useEffect(() => {
+    setShowFormError(!!formError);
+  }, [formError]);
 
   const formatPhoneNumber = (phoneNumberString) => {
     const cleaned = phoneNumberString.replace(/\D/g, '');
@@ -32,6 +38,11 @@ const ContactForm = ({ onSubmit, simplified = false, formError = null, csrfToken
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Clear form error when user starts typing
+    if (showFormError) {
+      setShowFormError(false);
+    }
     
     if (name === 'phone') {
       // Only format if we're not deleting characters
@@ -127,6 +138,7 @@ const ContactForm = ({ onSubmit, simplified = false, formError = null, csrfToken
       } catch (error) {
         console.error('Error submitting form:', error);
         setErrors({ submit: 'Failed to submit form. Please try again.' });
+        setShowFormError(true);
       } finally {
         setIsSubmitting(false);
       }
@@ -157,6 +169,37 @@ const ContactForm = ({ onSubmit, simplified = false, formError = null, csrfToken
             Please provide your contact information so our attorneys can review your case.
           </p>
         </>
+      )}
+      
+      {/* Display form error if present */}
+      {showFormError && formError && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-md shadow-sm" role="alert">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">
+                {formError}
+              </p>
+            </div>
+            <div className="ml-auto pl-3">
+              <div className="-mx-1.5 -my-1.5">
+                <button
+                  onClick={() => setShowFormError(false)}
+                  className="inline-flex rounded-md p-1.5 text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  <span className="sr-only">Dismiss</span>
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
       
       <form onSubmit={handleSubmit} className="space-y-4" noValidate aria-label="Contact information form">
@@ -345,9 +388,19 @@ const ContactForm = ({ onSubmit, simplified = false, formError = null, csrfToken
           type="submit"
           disabled={isSubmitting}
           aria-busy={isSubmitting}
-          className={`w-full py-3 px-4 ${isSubmitting ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-4 focus:ring-blue-300`}
+          className={`w-full py-3 px-4 ${isSubmitting ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-4 focus:ring-blue-300 shadow-md`}
         >
-          {isSubmitting ? 'Submitting...' : 'Submit My Case for Review'}
+          {isSubmitting ? (
+            <span className="inline-flex items-center">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Submitting...
+            </span>
+          ) : (
+            'Submit My Case for Review'
+          )}
         </button>
       </form>
     </motion.div>

@@ -106,11 +106,7 @@ function App() {
                 <EnhancedClickToCall 
                   phoneNumber={phoneNumber}
                   formattedPhoneNumber={formattedPhoneNumber}
-                  className="flex items-center text-sm sm:text-base font-medium px-3 py-2 rounded-md shadow-sm text-white"
-                  style={{ 
-                    backgroundColor: 'var(--gold-accent)',
-                    transition: `all var(--transition-speed)`
-                  }}
+                  className="flex items-center text-sm sm:text-base font-medium px-3 py-2 rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors"
                   iconClassName="w-4 h-4 mr-1 sm:mr-2"
                 >
                   <span className="hidden sm:inline">{formattedPhoneNumber}</span>
@@ -118,11 +114,7 @@ function App() {
                 </EnhancedClickToCall>
                 <a 
                   href="#qualification-form" 
-                  className="text-sm sm:text-base font-medium px-3 py-2 rounded-md shadow-sm text-white"
-                  style={{ 
-                    backgroundColor: 'var(--accent-primary)',
-                    transition: `all var(--transition-speed)`
-                  }}
+                  className="text-sm sm:text-base font-medium px-3 py-2 rounded-md shadow-sm text-white bg-blue-700 hover:bg-blue-800 transition-colors"
                 >
                   Free Evaluation
                 </a>

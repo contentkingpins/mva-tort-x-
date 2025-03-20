@@ -326,6 +326,13 @@ const QualificationForm = () => {
       
       // Set form as submitted on success
       setFormSubmitted(true);
+      
+      // Scroll to top of form to ensure notification is visible
+      const formElement = document.getElementById('qualification-form');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      
     } catch (error) {
       console.error('Error submitting form:', error);
       setFormError("We couldn't submit your information. Please try again or contact support.");
@@ -500,18 +507,31 @@ const QualificationForm = () => {
     if (formSubmitted) {
       return (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
           className="text-center py-8"
         >
-          <div className="bg-green-100 text-green-800 p-6 rounded-lg mb-6">
-            <h3 className="text-2xl font-bold mb-2">Thank You!</h3>
+          <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-6 rounded-lg mb-6 shadow-md relative overflow-hidden">
+            <div className="absolute top-0 right-0 h-16 w-16">
+              <svg className="absolute rotate-45 transform -translate-y-6 -translate-x-6 h-24 w-24 text-blue-200 fill-current" viewBox="0 0 24 24">
+                <path d="M12 0L12 24M0 12L24 12"></path>
+              </svg>
+            </div>
+            <div className="flex items-center justify-center mb-4 text-blue-600">
+              <svg className="w-12 h-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold mb-3">Claim Submitted Successfully!</h3>
             <p className="text-lg">
-              Your information has been successfully received. Our legal team will reach out shortly to discuss the next steps for your case.
+              Your information has been received and is being processed. A legal specialist will contact you within 24 hours to discuss your case.
             </p>
+            <div className="mt-3 text-sm font-medium">
+              Reference ID: {`CL-${Date.now().toString().substring(6)}`}
+            </div>
           </div>
           
-          <div className="mt-8">
+          <div className="mt-8 bg-white p-6 rounded-lg shadow-sm">
             <h4 className="text-xl font-semibold mb-4">What Happens Next?</h4>
             <ol className="text-left space-y-4 text-gray-700">
               <li className="flex items-start">
@@ -527,6 +547,14 @@ const QualificationForm = () => {
                 <span>Our team will explain your options and recommend the best path forward.</span>
               </li>
             </ol>
+            <div className="mt-6 text-center">
+              <EnhancedClickToCall
+                phoneNumber={phoneNumber}
+                formattedPhoneNumber={formattedPhoneNumber}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+                buttonText={`Questions? Call Us: ${formattedPhoneNumber}`}
+              />
+            </div>
           </div>
         </motion.div>
       );
@@ -534,25 +562,29 @@ const QualificationForm = () => {
 
     if (isQualified === true) {
       return (
-        <div className="bg-green-50 p-6 rounded-lg border-l-4 border-green-500 my-8">
-          <h3 className="text-xl font-bold text-green-700 mb-2">
+        <div className="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500 my-8">
+          <h3 className="text-xl font-bold text-blue-700 mb-2">
             Good news! You may qualify for compensation.
           </h3>
-          <p className="text-green-700 mb-4">
+          <p className="text-blue-700 mb-4">
             Based on your responses, you potentially have a valid claim. Please complete the form below so we can connect you with the right help.
           </p>
           {formSubmitted ? (
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h4 className="text-lg font-semibold mb-2">Thank You!</h4>
-              <p className="mb-4">
+              <div className="flex items-center justify-center mb-4 text-blue-600">
+                <svg className="w-10 h-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h4 className="text-lg font-semibold mb-2 text-center">Claim Submitted Successfully!</h4>
+              <p className="mb-4 text-center text-gray-600">
                 Your information has been submitted successfully. One of our specialists will contact you shortly to discuss your case.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 mt-6">
+              <div className="flex flex-col sm:flex-row gap-4 mt-6 justify-center">
                 <EnhancedClickToCall
                   phoneNumber={phoneNumber}
                   formattedPhoneNumber={formattedPhoneNumber}
-                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white"
-                  style={{ backgroundColor: 'var(--gold-accent)' }}
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
                   buttonText={`Call Us Now: ${formattedPhoneNumber}`}
                 />
                 <button
@@ -592,8 +624,7 @@ const QualificationForm = () => {
             <EnhancedClickToCall
               phoneNumber={phoneNumber}
               formattedPhoneNumber={formattedPhoneNumber}
-              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white"
-              style={{ backgroundColor: 'var(--gold-accent)' }}
+              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
               buttonText={`Call for Consultation: ${formattedPhoneNumber}`}
             />
             <button

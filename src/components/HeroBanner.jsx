@@ -24,14 +24,12 @@ const HeroBanner = ({ phoneNumber, formattedPhoneNumber }) => {
             <EnhancedClickToCall
               phoneNumber={phoneNumber}
               formattedPhoneNumber={formattedPhoneNumber}
-              className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md bg-white shadow-lg"
-              style={{ color: 'var(--gold-accent)' }}
+              className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md bg-white text-blue-600 hover:bg-gray-100 shadow-lg transition-colors"
               buttonText={`Call ${formattedPhoneNumber}`}
             />
             <a
               href="#qualification-form"
-              className="inline-flex items-center justify-center px-5 py-3 text-base font-medium rounded-md shadow-lg text-white"
-              style={{ backgroundColor: 'var(--accent-primary)' }}
+              className="inline-flex items-center justify-center px-5 py-3 text-base font-medium rounded-md shadow-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors"
             >
               Check If You Qualify
             </a>
