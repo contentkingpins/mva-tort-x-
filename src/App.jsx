@@ -96,9 +96,9 @@ function App() {
       <FormDataProvider>
         <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
           {/* Premium Header */}
-          <header className="bg-opacity-90 backdrop-blur-sm sticky top-0 z-50 border-b shadow-sm" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border-color)' }}>
+          <header className="bg-blue-700 sticky top-0 z-50 border-b shadow-md">
             <div className="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-              <h1 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+              <h1 className="text-lg font-semibold text-white">
                 <span className="hidden sm:inline">Claim Connectors</span>
                 <span className="sm:hidden">CC</span>
               </h1>
@@ -114,7 +114,7 @@ function App() {
                 </EnhancedClickToCall>
                 <a 
                   href="#qualification-form" 
-                  className="text-sm sm:text-base font-medium px-3 py-2 rounded-md shadow-sm text-white bg-blue-700 hover:bg-blue-800 transition-colors"
+                  className="text-sm sm:text-base font-medium px-3 py-2 rounded-md shadow-sm text-white bg-blue-800 hover:bg-blue-900 transition-colors"
                 >
                   Free Evaluation
                 </a>
