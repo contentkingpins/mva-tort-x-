@@ -41,7 +41,7 @@ const SafetyTips = () => {
             </p>
             <div className="mt-6 relative rounded-xl overflow-hidden h-96 shadow-xl">
               <img 
-                src="/images/traffic-rainy-4.jpg" 
+                src="/images/rainy-driving.jpg" 
                 alt="Driving in rainy weather" 
                 className="w-full h-full object-cover"
               />
