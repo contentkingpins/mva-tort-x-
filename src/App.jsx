@@ -5,6 +5,7 @@ import EnhancedClickToCall from './components/EnhancedClickToCall';
 import { FormDataProvider } from './context/FormDataContext';
 import { GeoLocationProvider } from './context/GeoLocationContext';
 import StateContent from './components/StateContent';
+import SimpleHeader from './components/SimpleHeader';
 
 // Lazy load components to improve initial load performance
 const QualificationForm = lazy(() => import('./components/QualificationForm'));
@@ -95,32 +96,11 @@ function App() {
     <GeoLocationProvider>
       <FormDataProvider>
         <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-          {/* Premium Header */}
-          <header className="bg-blue-700 sticky top-0 z-50 border-b shadow-md">
-            <div className="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-              <h1 className="text-xl font-bold text-white flex items-center">
-                <span className="hidden sm:inline">Claim Connectors</span>
-                <span className="sm:hidden text-2xl">CC</span>
-              </h1>
-              <div className="flex items-center space-x-3">
-                <EnhancedClickToCall 
-                  phoneNumber={phoneNumber}
-                  formattedPhoneNumber={formattedPhoneNumber}
-                  className="flex items-center text-sm sm:text-base font-medium px-3 py-2 rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-                  iconClassName="w-4 h-4 mr-1 sm:mr-2"
-                >
-                  <span className="hidden sm:inline">{formattedPhoneNumber}</span>
-                  <span className="sm:hidden">Call</span>
-                </EnhancedClickToCall>
-                <a 
-                  href="#qualification-form" 
-                  className="text-sm sm:text-base font-medium px-3 py-2 rounded-md shadow-sm text-white bg-blue-800 hover:bg-blue-900 transition-colors"
-                >
-                  Free Evaluation
-                </a>
-              </div>
-            </div>
-          </header>
+          {/* Use the new SimpleHeader component */}
+          <SimpleHeader 
+            phoneNumber={phoneNumber} 
+            formattedPhoneNumber={formattedPhoneNumber} 
+          />
           
           {/* Hero Banner */}
           <ErrorBoundary FallbackComponent={ErrorFallback}>
