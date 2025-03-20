@@ -1,7 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import HeroBanner from './components/HeroBanner';
-import ThemeToggle from './components/ThemeToggle';
 
 // Lazy load components to improve initial load performance
 const QualificationForm = lazy(() => import('./components/QualificationForm'));
@@ -76,11 +75,25 @@ function App() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-      {/* Header with Theme Toggle */}
+      {/* Premium Header */}
       <header className="bg-opacity-90 backdrop-blur-sm sticky top-0 z-50 border-b shadow-sm" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border-color)' }}>
-        <div className="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Claim Connectors</h1>
-          <ThemeToggle />
+        <div className="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <h1 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+            <span className="hidden sm:inline">Claim Connectors</span>
+            <span className="sm:hidden">CC</span>
+          </h1>
+          <div className="flex items-center">
+            <a 
+              href="#qualification-form" 
+              className="text-sm sm:text-base font-medium px-4 py-2 rounded-md shadow-sm text-white"
+              style={{ 
+                backgroundColor: 'var(--accent-primary)',
+                transition: `all var(--transition-speed)`
+              }}
+            >
+              Free Evaluation
+            </a>
+          </div>
         </div>
       </header>
       

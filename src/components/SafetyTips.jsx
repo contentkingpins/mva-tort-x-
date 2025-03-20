@@ -33,9 +33,12 @@ const SafetyTips = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-5">
-            <h2 className="text-3xl font-extrabold sm:text-4xl" style={{ color: 'var(--text-primary)' }}>
-              Preventing Accidents
-            </h2>
+            <div className="relative inline-block mb-4">
+              <h2 className="text-3xl font-extrabold sm:text-4xl" style={{ color: 'var(--text-primary)' }}>
+                Preventing Accidents
+              </h2>
+              <div className="absolute bottom-0 left-0 h-1 w-24" style={{ backgroundColor: 'var(--gold-accent)' }}></div>
+            </div>
             <p className="mt-3 text-xl" style={{ color: 'var(--text-secondary)' }}>
               While we're here to help when accidents happen, we also care about your safety. Follow these tips to reduce your risk on the road.
             </p>
@@ -57,15 +60,9 @@ const SafetyTips = () => {
               {tips.map((tip, index) => (
                 <div 
                   key={index}
-                  className="p-5 sm:p-6 rounded-lg border-l-4 hover:shadow-md transition-all touch-friendly-stack"
-                  style={{ 
-                    backgroundColor: 'var(--card-bg)', 
-                    borderLeftColor: 'var(--accent-primary)',
-                    boxShadow: '0 2px 8px var(--shadow)',
-                    transition: `all var(--transition-speed)` 
-                  }}
+                  className="premium-card touch-friendly-stack"
                 >
-                  <h3 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>{tip.title}</h3>
+                  <h3 className="text-lg font-semibold" style={{ color: 'var(--accent-primary)' }}>{tip.title}</h3>
                   <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>{tip.description}</p>
                 </div>
               ))}
