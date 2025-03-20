@@ -6,21 +6,21 @@ const ClientStories = () => {
     {
       name: "Sarah L.",
       location: "Phoenix, AZ",
-      image: "/images/driver-stressed-3.jpg",
+      image: "/images/testimonials/sarah.jpg",
       story: "After my accident, I wasn't sure what to do. My car was damaged, and I was dealing with injuries. Claim Connectors guided me through every step of the process. Within months, I received a settlement that covered all my medical bills and vehicle repairs.",
       result: "$85,000 Settlement"
     },
     {
       name: "James T.",
       location: "Dallas, TX",
-      image: "/images/car-accident-1.jpg",
+      image: "/images/testimonials/james.jpg",
       story: "I was involved in a multi-vehicle accident that wasn't my fault. The other driver's insurance company tried to deny my claim. Thanks to the expert team at Claim Connectors, I was connected with specialists who fought for me and won my case.",
       result: "$125,000 Settlement"
     },
     {
       name: "Michelle K.",
       location: "Portland, OR",
-      image: "/images/car-damage-2.jpg",
+      image: "/images/testimonials/michelle.jpg",
       story: "When my car was hit in a parking lot, I thought it would be a simple process to get compensation. But the insurance company offered far less than needed for repairs. Claim Connectors helped me find representation that got me fair compensation.",
       result: "$32,000 Settlement"
     }
@@ -46,27 +46,27 @@ const ClientStories = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.5, delay: index * 0.2 }}
-              className="bg-white rounded-xl shadow-lg overflow-hidden"
+              className="bg-white rounded-xl shadow-lg overflow-hidden p-6"
             >
-              <div className="md:flex">
-                <div className="md:flex-shrink-0 md:w-1/3">
+              <div className="flex flex-col md:flex-row md:items-center">
+                <div className="flex-shrink-0 mx-auto md:mx-0 mb-4 md:mb-0 md:mr-6">
                   <img
-                    className="h-60 w-full object-cover md:h-full"
+                    className="h-24 w-24 rounded-full object-cover border-4 border-blue-100"
                     src={story.image}
-                    alt={`${story.name}'s accident case`}
+                    alt={`${story.name}`}
                   />
                 </div>
-                <div className="p-8 md:w-2/3">
-                  <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
                     <div>
                       <h3 className="text-2xl font-semibold text-gray-900">{story.name}</h3>
                       <p className="text-sm text-gray-500">{story.location}</p>
                     </div>
-                    <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
+                    <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold mt-2 md:mt-0 inline-block">
                       {story.result}
                     </div>
                   </div>
-                  <p className="mt-4 text-gray-600 leading-relaxed">"{story.story}"</p>
+                  <p className="text-gray-600 leading-relaxed">"{story.story}"</p>
                 </div>
               </div>
             </motion.div>
