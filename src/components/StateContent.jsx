@@ -29,8 +29,8 @@ const StateContent = () => {
   if (isLoading) {
     return (
       <div className="p-4 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-        <p className="text-gray-600 mt-2">Detecting your location...</p>
+        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+        <p className="text-gray-500 text-sm mt-2">Personalizing your experience...</p>
       </div>
     );
   }
@@ -44,51 +44,70 @@ const StateContent = () => {
   };
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6 mb-8">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">{content.headline}</h2>
-        <div className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
-          {stateName}
+    <div className="bg-white rounded-lg p-5 mb-6 border border-gray-100 shadow-sm">
+      <div className="flex items-start justify-between">
+        {/* Local message with subtle state indicator */}
+        <div className="flex-grow">
+          <div className="flex items-center space-x-2 mb-2">
+            <h3 className="text-lg font-medium text-gray-800">{stateName} Personal Injury Resources</h3>
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
+              <svg className="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+              </svg>
+              Local
+            </span>
+          </div>
+          <p className="text-gray-600 text-sm mb-3">{content.subheadline}</p>
+          
+          {/* Key legal information in a subtle, collapsible section */}
+          <details className="mb-3 text-sm">
+            <summary className="font-medium text-blue-600 cursor-pointer hover:text-blue-700">
+              Important {stateName} Legal Information
+            </summary>
+            <div className="mt-2 pl-4 border-l-2 border-blue-100 space-y-2">
+              <p className="text-gray-700">
+                <span className="font-medium">Time Limits:</span> {content.statistic}
+              </p>
+              <p className="text-gray-700">
+                <span className="font-medium">Fault Laws:</span> {content.legalInfo}
+              </p>
+              <p className="text-gray-700">
+                <span className="font-medium">Damage Considerations:</span> {content.maxDamages}
+              </p>
+            </div>
+          </details>
+          
+          {!isSupported && (
+            <div className="text-xs text-blue-600 mb-3">
+              While {stateName} is outside our primary focus areas, our network may still be able to assist you.
+            </div>
+          )}
+        </div>
+        
+        {/* Quick Call Section */}
+        <div className="ml-4 flex-shrink-0">
+          <a 
+            href="tel:833-715-6010" 
+            onClick={handleCall}
+            className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-colors"
+          >
+            <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+            Free Consult
+          </a>
         </div>
       </div>
       
-      <p className="text-lg text-gray-600 mb-4">{content.subheadline}</p>
-      
-      <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6">
-        <p className="text-amber-800 font-semibold">{content.statistic}</p>
-      </div>
-
-      {/* New sections for enhanced legal information */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
-          <h3 className="text-blue-800 font-semibold mb-2">Negligence Laws</h3>
-          <p className="text-blue-800">{content.legalInfo}</p>
-        </div>
-        <div className="bg-green-50 border-l-4 border-green-500 p-4">
-          <h3 className="text-green-800 font-semibold mb-2">Damage Caps</h3>
-          <p className="text-green-800">{content.maxDamages}</p>
-        </div>
-      </div>
-      
-      {!isSupported && (
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
-          <p className="text-blue-800">
-            We're expanding our services to fully cover {stateName}. 
-            We may still be able to help with your case - call us to learn more.
-          </p>
-        </div>
-      )}
-      
-      {/* State selector for changing state */}
-      <div className="mt-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Not in {stateName}? Select your state:
-        </label>
-        <div className="relative">
+      {/* Subtle state selector */}
+      <div className="mt-3 pt-3 border-t border-gray-100">
+        <div className="flex items-center text-xs text-gray-500">
+          <span className="mr-2">Not in {stateName}?</span>
           <select 
-            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+            className="text-xs py-1 pl-1 pr-7 border-0 focus:ring-0 focus:outline-none bg-gray-50 rounded"
             value={stateCode}
             onChange={(e) => handleStateChange(e.target.value)}
+            aria-label="Select your state"
           >
             {/* Group states by region */}
             {Object.entries(regions).map(([region, stateCodes]) => (
@@ -100,7 +119,6 @@ const StateContent = () => {
                     <option 
                       key={code} 
                       value={code}
-                      className={supported ? "font-semibold" : "text-gray-500"}
                     >
                       {state.name}{supported ? " ✓" : ""}
                     </option>
@@ -109,26 +127,7 @@ const StateContent = () => {
               </optgroup>
             ))}
           </select>
-          <div className="text-xs text-gray-500 mt-1">
-            ✓ indicates states with full coverage details
-          </div>
         </div>
-      </div>
-
-      {/* Call to action section */}
-      <div className="mt-6 bg-gray-50 p-4 rounded-md border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">Need Help With Your Case?</h3>
-        <p className="text-gray-600 mb-4">
-          Our experienced attorneys understand {stateName}'s complex personal injury laws 
-          and can help you navigate your claim for maximum compensation.
-        </p>
-        <a 
-          href="tel:833-715-6010" 
-          className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out"
-          onClick={handleCall}
-        >
-          Call 833-715-6010 Now
-        </a>
       </div>
     </div>
   );

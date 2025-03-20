@@ -17,7 +17,7 @@ export const useFormData = () => {
 // Provider component
 export const FormDataProvider = ({ children }) => {
   // Get geolocation data
-  const { stateCode, stateName } = useGeoLocation();
+  const { stateCode } = useGeoLocation();
   
   const [formData, setFormData] = useState({
     // Form data

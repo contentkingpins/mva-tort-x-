@@ -7,7 +7,7 @@ import { useFormData } from '../context/FormDataContext';
 import { submitQualifiedLead } from '../utils/pingtreeAPI';
 
 const QualificationForm = () => {
-  const { formData: contextFormData, updateFormData } = useFormData();
+  const { updateFormData } = useFormData();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     accidentDate: null,
@@ -31,7 +31,6 @@ const QualificationForm = () => {
   const [csrfToken, setCsrfToken] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [submissionResult, setSubmissionResult] = useState(null);
   
   // Fetch CSRF token on component mount
   useEffect(() => {
@@ -50,7 +49,21 @@ const QualificationForm = () => {
     updateFormData(formData);
   }, [formData, updateFormData]);
   
-  const [questions, setQuestions] = useState([
+  // Clear transition state on component updates
+  // This fixes the continuous loading bug
+  useEffect(() => {
+    let transitionTimer;
+    if (isTransitioning) {
+      transitionTimer = setTimeout(() => {
+        setIsTransitioning(false);
+      }, 600);
+    }
+    return () => {
+      if (transitionTimer) clearTimeout(transitionTimer);
+    };
+  }, [isTransitioning]);
+
+  const [questions] = useState([
     {
       id: 'accidentDate',
       question: 'When did your accident occur?',
@@ -227,11 +240,6 @@ const QualificationForm = () => {
         setCurrentStep(questions.length); // Ensure we're beyond questions
         checkQualification();
       }
-      
-      // End transition animation after a short delay
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 300);
     }, 200);
   };
 
@@ -242,11 +250,6 @@ const QualificationForm = () => {
     // Delay to allow animation to complete
     setTimeout(() => {
       setCurrentStep(prev => Math.max(0, prev - 1));
-      
-      // End transition animation after a short delay
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 300);
     }, 200);
   };
 
@@ -262,10 +265,12 @@ const QualificationForm = () => {
       // In a real app, more logic would be here
       // For now, we'll qualify most users
       setIsQualified(true);
+      setIsTransitioning(false);
     } catch (error) {
       console.error("Error during qualification check:", error);
       setFormError("An error occurred while processing your information. Please try again.");
       setIsQualified(false);
+      setIsTransitioning(false);
     }
   };
 
@@ -302,13 +307,6 @@ const QualificationForm = () => {
         sourceId: `tortx_lead_${Date.now()}` // Generate a unique source ID
       });
       
-      // Log form submission (for debugging)
-      console.log('Submitting form data:', { 
-        ...formData, 
-        ...contactInfo,
-        _csrf: csrfToken 
-      });
-      
       // Check if we're in development mode
       const isTestSubmission = process.env.NODE_ENV === 'development';
       
@@ -318,9 +316,6 @@ const QualificationForm = () => {
         contactInfo,
         isTestSubmission
       );
-      
-      // Store the API result for later reference
-      setSubmissionResult(apiResult);
       
       // Check if submission was successful
       if (apiResult.status === "error") {
@@ -662,7 +657,7 @@ const QualificationForm = () => {
         {currentStep < questions.length ? renderQuestion() : renderResults()}
       </AnimatePresence>
       
-      {/* Loading indicator only during transitions */}
+      {/* Loading indicator only during active transitions */}
       {isTransitioning && currentStep < questions.length && (
         <div className="flex justify-center mt-4">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
