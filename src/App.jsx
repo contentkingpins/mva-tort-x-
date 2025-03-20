@@ -98,9 +98,9 @@ function App() {
           {/* Premium Header */}
           <header className="bg-blue-700 sticky top-0 z-50 border-b shadow-md">
             <div className="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-              <h1 className="text-lg font-semibold text-white">
+              <h1 className="text-xl font-bold text-white flex items-center">
                 <span className="hidden sm:inline">Claim Connectors</span>
-                <span className="sm:hidden">CC</span>
+                <span className="sm:hidden text-2xl">CC</span>
               </h1>
               <div className="flex items-center space-x-3">
                 <EnhancedClickToCall 
