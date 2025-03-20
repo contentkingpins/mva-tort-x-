@@ -1,6 +1,7 @@
 import React from 'react';
+import EnhancedClickToCall from './EnhancedClickToCall';
 
-const HeroBanner = () => {
+const HeroBanner = ({ phoneNumber, formattedPhoneNumber }) => {
   return (
     <div className="relative bg-gray-900">
       <div className="absolute inset-0">
@@ -20,9 +21,17 @@ const HeroBanner = () => {
             You may be entitled to compensation. Our expert team connects you with the right help to ensure you get the settlement you deserve.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4">
+            <EnhancedClickToCall
+              phoneNumber={phoneNumber}
+              formattedPhoneNumber={formattedPhoneNumber}
+              className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md bg-white shadow-lg"
+              style={{ color: 'var(--gold-accent)' }}
+              buttonText={`Call ${formattedPhoneNumber}`}
+            />
             <a
               href="#qualification-form"
-              className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 transition-colors shadow-lg"
+              className="inline-flex items-center justify-center px-5 py-3 text-base font-medium rounded-md shadow-lg text-white"
+              style={{ backgroundColor: 'var(--accent-primary)' }}
             >
               Check If You Qualify
             </a>

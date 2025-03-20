@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProgressBar from './ProgressBar';
 import ContactForm from './ContactForm';
+import EnhancedClickToCall from './EnhancedClickToCall';
+import { useFormData } from '../context/FormDataContext';
 
 const QualificationForm = () => {
+  const { formData: contextFormData, updateFormData } = useFormData();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     accidentDate: null,
@@ -38,6 +41,11 @@ const QualificationForm = () => {
     
     setCsrfToken(generateToken());
   }, []);
+  
+  // Update context when form data changes
+  useEffect(() => {
+    updateFormData(formData);
+  }, [formData, updateFormData]);
   
   const [questions, setQuestions] = useState([
     {
@@ -162,6 +170,20 @@ const QualificationForm = () => {
           }
         };
       }
+      
+      // For state/location information
+      if (questionId === 'location' && value) {
+        // Extract state from location (simplified for demo)
+        const stateMatch = value.match(/([A-Z]{2})$/);
+        if (stateMatch && stateMatch[1]) {
+          return { 
+            ...prev, 
+            [questionId]: value,
+            incidentState: stateMatch[1]
+          };
+        }
+      }
+      
       return { ...prev, [questionId]: value };
     });
   };
@@ -282,7 +304,11 @@ const QualificationForm = () => {
     try {
       setIsLoading(true);
       
-      // Here you would normally implement rate limiting logic on the server
+      // Update context with contact information
+      updateFormData({
+        ...contactInfo,
+        sourceId: `tortx_lead_${Date.now()}` // Generate a unique source ID
+      });
       
       // This would be your API call with CSRF token
       // const response = await fetch('/api/submit-case', {
@@ -293,8 +319,6 @@ const QualificationForm = () => {
       //   },
       //   body: JSON.stringify({ ...formData, contactInfo })
       // });
-      
-      // if (!response.ok) throw new Error('Failed to submit form');
       
       // Simulate API call
       console.log('Submitting form data with CSRF token:', { 
@@ -314,6 +338,18 @@ const QualificationForm = () => {
       setIsLoading(false);
     }
   };
+
+  // Phone number for click-to-call
+  const phoneNumber = "8337156010";
+  const formatPhoneNumber = (phoneNumberString) => {
+    const cleaned = ('' + phoneNumberString).replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    if (match) {
+      return '(' + match[1] + ') ' + match[2] + '-' + match[3];
+    }
+    return phoneNumberString;
+  };
+  const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
 
   // Render the current question
   const renderQuestion = () => {
@@ -491,52 +527,104 @@ const QualificationForm = () => {
 
     if (isQualified === true) {
       return (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
-            <p className="text-blue-700">
-              Based on your responses, we'd like to learn more about your situation. Please provide your contact information below so we can discuss how we might be able to help.
-            </p>
-          </div>
-          <ContactForm onSubmit={handleSubmitContactInfo} />
-        </motion.div>
+        <div className="bg-green-50 p-6 rounded-lg border-l-4 border-green-500 my-8">
+          <h3 className="text-xl font-bold text-green-700 mb-2">
+            Good news! You may qualify for compensation.
+          </h3>
+          <p className="text-green-700 mb-4">
+            Based on your responses, you potentially have a valid claim. Please complete the form below so we can connect you with the right help.
+          </p>
+          {formSubmitted ? (
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <h4 className="text-lg font-semibold mb-2">Thank You!</h4>
+              <p className="mb-4">
+                Your information has been submitted successfully. One of our specialists will contact you shortly to discuss your case.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 mt-6">
+                <EnhancedClickToCall
+                  phoneNumber={phoneNumber}
+                  formattedPhoneNumber={formattedPhoneNumber}
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white"
+                  style={{ backgroundColor: 'var(--gold-accent)' }}
+                  buttonText={`Call Us Now: ${formattedPhoneNumber}`}
+                />
+                <button
+                  onClick={() => {
+                    setCurrentStep(0);
+                    setFormData({
+                      accidentDate: null,
+                      medicalTreatment: null,
+                      medicalTreatmentDate: null,
+                      atFault: null,
+                      hasAttorney: null,
+                      movingViolation: null,
+                      priorSettlement: null,
+                      insuranceCoverage: {
+                        liability: false,
+                        uninsured: false,
+                        underinsured: false
+                      }
+                    });
+                    setIsQualified(null);
+                    setFormSubmitted(false);
+                  }}
+                  className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  Start a New Evaluation
+                </button>
+              </div>
+            </div>
+          ) : (
+            <ContactForm
+              onSubmit={handleSubmitContactInfo}
+              formError={formError}
+              csrfToken={csrfToken}
+            />
+          )}
+        </div>
       );
     } else if (isQualified === false) {
       return (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="py-8"
-        >
-          <div className="bg-blue-50 text-blue-800 p-6 rounded-lg mb-6">
-            <h3 className="text-2xl font-bold mb-2">Thank You</h3>
-            <p className="text-lg">
-              Thank you for submitting your information! We're reviewing your responses and will reach out if additional information is needed or if we have resources to assist you further.
-            </p>
+        <div className="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500 my-8">
+          <h3 className="text-xl font-bold text-blue-700 mb-2">
+            Thank you for your interest
+          </h3>
+          <p className="text-blue-700 mb-4">
+            Based on your responses, your case may not qualify for our services at this time. However, each case is unique, and you may want to consult with a legal professional directly.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 mt-6">
+            <EnhancedClickToCall
+              phoneNumber={phoneNumber}
+              formattedPhoneNumber={formattedPhoneNumber}
+              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white"
+              style={{ backgroundColor: 'var(--gold-accent)' }}
+              buttonText={`Call for Consultation: ${formattedPhoneNumber}`}
+            />
+            <button
+              onClick={() => {
+                setCurrentStep(0);
+                setFormData({
+                  accidentDate: null,
+                  medicalTreatment: null,
+                  medicalTreatmentDate: null,
+                  atFault: null,
+                  hasAttorney: null,
+                  movingViolation: null,
+                  priorSettlement: null,
+                  insuranceCoverage: {
+                    liability: false,
+                    uninsured: false,
+                    underinsured: false
+                  }
+                });
+                setIsQualified(null);
+              }}
+              className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            >
+              Start a New Evaluation
+            </button>
           </div>
-          
-          <div className="mt-6 text-gray-700">
-            <h4 className="text-xl font-semibold mb-4">Additional Resources</h4>
-            <p className="mb-4">
-              While we review your case, you might find these resources helpful:
-            </p>
-            <ul className="list-disc pl-5 space-y-2 mb-6">
-              <li><a href="/resources/after-accident-checklist" className="text-blue-600 hover:underline">What to Do After a Car Accident Checklist</a></li>
-              <li><a href="/resources/understanding-insurance-claims" className="text-blue-600 hover:underline">Understanding Insurance Claims Process</a></li>
-              <li><a href="/resources/common-injuries" className="text-blue-600 hover:underline">Common Car Accident Injuries and Treatment Options</a></li>
-            </ul>
-          </div>
-          
-          <div className="mt-8 border-t pt-6">
-            <h4 className="text-lg font-semibold mb-3">Have Additional Questions?</h4>
-            <p className="mb-4">
-              Feel free to reach out to our team directly. We're here to help.
-            </p>
-            <ContactForm onSubmit={handleSubmitContactInfo} simplified={true} />
-          </div>
-        </motion.div>
+        </div>
       );
     }
     

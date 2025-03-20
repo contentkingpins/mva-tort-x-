@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useFormData } from '../context/FormDataContext';
 
-const ContactForm = ({ onSubmit, simplified = false }) => {
+const ContactForm = ({ onSubmit, simplified = false, formError = null, csrfToken = '' }) => {
+  const { updateFormData } = useFormData();
   const [contactInfo, setContactInfo] = useState({
     firstName: '',
     lastName: '',
@@ -45,6 +47,23 @@ const ContactForm = ({ onSubmit, simplified = false }) => {
       setErrors(prev => ({ ...prev, [name]: null }));
     }
   };
+
+  // Update form data context when contact info changes
+  useEffect(() => {
+    // Only update if we have some data filled in
+    if (contactInfo.firstName || contactInfo.email || contactInfo.phone) {
+      // Map to the context structure
+      const contactData = {
+        firstName: contactInfo.firstName,
+        lastName: contactInfo.lastName,
+        email: contactInfo.email,
+        phone: contactInfo.phone.replace(/\D/g, ''), // Clean phone number for API
+        zip: contactInfo.zipCode,
+      };
+      
+      updateFormData(contactData);
+    }
+  }, [contactInfo, updateFormData]);
 
   const validateForm = () => {
     const newErrors = {};

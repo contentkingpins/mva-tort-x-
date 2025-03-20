@@ -1,7 +1,21 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import EnhancedClickToCall from './EnhancedClickToCall';
+import { useFormData } from '../context/FormDataContext';
 
 const ClientStories = () => {
+  // Phone number for click-to-call
+  const phoneNumber = "8337156010";
+  const formatPhoneNumber = (phoneNumberString) => {
+    const cleaned = ('' + phoneNumberString).replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    if (match) {
+      return '(' + match[1] + ') ' + match[2] + '-' + match[3];
+    }
+    return phoneNumberString;
+  };
+  const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
+
   const stories = [
     {
       name: "Sarah L.",
@@ -25,6 +39,15 @@ const ClientStories = () => {
       result: "$32,000 Settlement"
     }
   ];
+
+  // Update context with state information from stories
+  const { updateFormData } = useFormData();
+  React.useEffect(() => {
+    // Example: Set some placeholder state information when stories are viewed
+    updateFormData({
+      incidentState: 'TX', // Default placeholder state
+    });
+  }, [updateFormData]);
 
   return (
     <div className="py-16" style={{ backgroundColor: 'var(--background-secondary)' }}>
@@ -95,10 +118,27 @@ const ClientStories = () => {
           ))}
         </div>
         
-        <div className="mt-12 text-center">
+        <div className="mt-12 flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
+          <EnhancedClickToCall 
+            phoneNumber={phoneNumber}
+            formattedPhoneNumber={formattedPhoneNumber}
+            className="premium-button inline-flex items-center px-6 py-3 text-base font-medium rounded-md shadow-md w-full sm:w-auto justify-center"
+            style={{ backgroundColor: 'var(--gold-accent)' }}
+            buttonText="Call Now"
+            onClick={() => {
+              // Set state from the story for better data enrichment
+              updateFormData({
+                incidentState: 'TX',
+                accidentDate: new Date().toISOString().split('T')[0],
+                atFault: false,
+                hasAttorney: 'no',
+                priorSettlement: false
+              });
+            }}
+          />
           <a 
             href="#qualification-form"
-            className="premium-button inline-flex items-center px-6 py-3 text-base font-medium rounded-md shadow-md"
+            className="premium-button inline-flex items-center px-6 py-3 text-base font-medium rounded-md shadow-md w-full sm:w-auto justify-center"
           >
             See If You Qualify
             <svg className="ml-2 -mr-1 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
