@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Images</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .image-container {
+      margin-bottom: 30px;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 5px;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .caption {
+      text-align: center;
+      margin-top: 10px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>Image Accessibility Test</h1>
+  
+  <div class="image-container">
+    <h2>Image 1: Car accident</h2>
+    <img src="/images/shutterstock_2310978881.jpg" alt="Car accident involving multiple vehicles">
+    <p class="caption">Path: /images/shutterstock_2310978881.jpg</p>
+  </div>
+  
+  <div class="image-container">
+    <h2>Image 2: Vehicle damage</h2>
+    <img src="/images/shutterstock_2465073405.jpg" alt="Person checking damage to their vehicle">
+    <p class="caption">Path: /images/shutterstock_2465073405.jpg</p>
+  </div>
+  
+  <div class="image-container">
+    <h2>Image 3: Person on phone</h2>
+    <img src="/images/shutterstock_2386561053.jpg" alt="Person on phone next to damaged car">
+    <p class="caption">Path: /images/shutterstock_2386561053.jpg</p>
+  </div>
+  
+  <div class="image-container">
+    <h2>Image 4: Rainy driving</h2>
+    <img src="/images/rainy-driving.jpg" alt="Traffic in rainy weather seen from inside car">
+    <p class="caption">Path: /images/rainy-driving.jpg</p>
+  </div>
+
+  <script>
+    // Log any image load errors to console
+    document.querySelectorAll('img').forEach(img => {
+      img.onerror = function() {
+        console.error(`Failed to load image: ${this.src}`);
+        this.style.display = 'none';
+        const errorMsg = document.createElement('p');
+        errorMsg.textContent = `Error: Image failed to load (${this.src})`;
+        errorMsg.style.color = 'red';
+        errorMsg.style.textAlign = 'center';
+        this.parentNode.appendChild(errorMsg);
+      };
+      
+      img.onload = function() {
+        console.log(`Successfully loaded image: ${this.src}`);
+      };
+    });
+  </script>
+</body>
+</html> 

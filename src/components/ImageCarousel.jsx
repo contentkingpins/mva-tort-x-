@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ImageCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState({});
+  const [allImagesLoaded, setAllImagesLoaded] = useState(false);
+  const carouselRef = useRef(null);
   
   const images = [
     {
@@ -31,13 +34,49 @@ const ImageCarousel = () => {
     }
   ];
 
+  // Preload all images to avoid display issues
   useEffect(() => {
+    const loadImage = (src, index) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        setImagesLoaded(prev => ({
+          ...prev,
+          [index]: true
+        }));
+      };
+      img.onerror = () => {
+        console.error(`Failed to load image: ${src}`);
+        setImagesLoaded(prev => ({
+          ...prev,
+          [index]: false
+        }));
+      };
+    };
+
+    images.forEach((image, index) => {
+      loadImage(image.src, index);
+    });
+  }, []);
+
+  // Check if all images are loaded
+  useEffect(() => {
+    if (Object.keys(imagesLoaded).length === images.length) {
+      const allLoaded = Object.values(imagesLoaded).every(loaded => loaded);
+      setAllImagesLoaded(allLoaded);
+    }
+  }, [imagesLoaded, images.length]);
+
+  // Auto-rotate carousel
+  useEffect(() => {
+    if (!allImagesLoaded) return;
+    
     const interval = setInterval(() => {
       setCurrentIndex(prevIndex => (prevIndex + 1) % images.length);
     }, 5000);
     
     return () => clearInterval(interval);
-  }, [images.length]);
+  }, [allImagesLoaded, images.length]);
 
   const handleNext = () => {
     setCurrentIndex(prevIndex => (prevIndex + 1) % images.length);
@@ -51,9 +90,30 @@ const ImageCarousel = () => {
     setCurrentIndex(index);
   };
 
+  // Fallback content for image loading errors
+  const renderFallbackImage = (index) => (
+    <div 
+      className="w-full h-full bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center"
+    >
+      <div className="text-center text-white p-6">
+        <h3 className="text-2xl font-bold">{images[index].caption}</h3>
+        <p className="mt-4">{images[index].description}</p>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="relative w-full max-w-5xl mx-auto my-12 rounded-xl overflow-hidden shadow-2xl">
+    <div className="relative w-full max-w-5xl mx-auto my-12 rounded-xl overflow-hidden shadow-2xl" ref={carouselRef}>
       <div className="relative h-96 md:h-[500px] bg-gray-900">
+        {!allImagesLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-800 text-white">
+            <div className="flex flex-col items-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+              <p className="mt-4">Loading images...</p>
+            </div>
+          </div>
+        )}
+        
         <AnimatePresence mode="wait">
           <motion.div
             key={currentIndex}
@@ -64,11 +124,20 @@ const ImageCarousel = () => {
             className="absolute inset-0"
           >
             <div className="absolute inset-0 bg-black/50 z-10"></div>
-            <img 
-              src={images[currentIndex].src} 
-              alt={images[currentIndex].alt}
-              className="w-full h-full object-cover"
-            />
+            {imagesLoaded[currentIndex] !== false ? (
+              <img 
+                src={images[currentIndex].src} 
+                alt={images[currentIndex].alt}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  setImagesLoaded(prev => ({
+                    ...prev,
+                    [currentIndex]: false
+                  }));
+                }}
+              />
+            ) : renderFallbackImage(currentIndex)}
             <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-20 bg-gradient-to-t from-black/80 to-transparent">
               <h3 className="text-2xl font-bold mb-2">{images[currentIndex].caption}</h3>
               <p className="text-lg">{images[currentIndex].description}</p>
