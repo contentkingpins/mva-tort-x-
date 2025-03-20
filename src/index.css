@@ -1,3 +1,117 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities; 
+@tailwind utilities;
+
+/* Theme Variables */
+:root {
+  /* Base theme (light) */
+  --background: #ffffff;
+  --background-secondary: #f9fafb;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --accent-primary: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-secondary: #dbeafe;
+  --border-color: #e5e7eb;
+  --card-bg: #f3f7fd;
+  --card-border: #3b82f6;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --shadow: rgba(0, 0, 0, 0.1);
+  
+  /* Animation settings */
+  --transition-speed: 0.3s;
+}
+
+[data-theme='dark'] {
+  --background: #1f2937;
+  --background-secondary: #111827;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --accent-primary: #3b82f6;
+  --accent-hover: #60a5fa;
+  --accent-secondary: #1e3a8a;
+  --border-color: #374151;
+  --card-bg: #1e3a8a1a;
+  --card-border: #60a5fa;
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --shadow: rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='premium'] {
+  --background: #f8f5f0;
+  --background-secondary: #ffffff;
+  --text-primary: #292524;
+  --text-secondary: #57534e;
+  --accent-primary: #854d0e;
+  --accent-hover: #713f12;
+  --accent-secondary: #fef3c7;
+  --border-color: #d6d3d1;
+  --card-bg: #fef9ee;
+  --card-border: #ca8a04;
+  --success: #166534;
+  --warning: #b45309;
+  --danger: #b91c1c;
+  --shadow: rgba(107, 70, 19, 0.1);
+}
+
+/* Reduced animations for those who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-speed: 0s;
+  }
+}
+
+[data-reduced-motion='true'] {
+  --transition-speed: 0s;
+}
+
+/* Global styles */
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  html {
+    font-size: 15px; /* Slightly smaller base font size for mobile */
+  }
+  
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (pointer: coarse) {
+  /* Increase tap target sizes for better mobile usability */
+  button, 
+  a, 
+  input[type="checkbox"], 
+  input[type="radio"],
+  select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Add more space between interactive elements for easier tapping */
+  .touch-friendly-stack > * + * {
+    margin-top: 1rem;
+  }
+}
+
+/* Safe area insets for notched phones */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+} 

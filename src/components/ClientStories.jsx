@@ -27,18 +27,18 @@ const ClientStories = () => {
   ];
 
   return (
-    <div className="py-16 bg-gray-50">
+    <div className="py-16" style={{ backgroundColor: 'var(--background-secondary)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+          <h2 className="text-3xl font-extrabold sm:text-4xl" style={{ color: 'var(--text-primary)' }}>
             Real People, Real Results
           </h2>
-          <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
+          <p className="mt-3 max-w-2xl mx-auto text-xl" style={{ color: 'var(--text-secondary)' }}>
             See how we've helped clients just like you get the compensation they deserve.
           </p>
         </div>
 
-        <div className="mt-12 space-y-8">
+        <div className="mt-12 space-y-6 sm:space-y-8">
           {stories.map((story, index) => (
             <motion.div
               key={index}
@@ -46,27 +46,38 @@ const ClientStories = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.5, delay: index * 0.2 }}
-              className="bg-white rounded-xl shadow-lg overflow-hidden p-6"
+              className="p-5 sm:p-6 rounded-xl overflow-hidden shadow-lg"
+              style={{ 
+                backgroundColor: 'var(--background)',
+                boxShadow: '0 4px 12px var(--shadow)',
+                transition: `all var(--transition-speed)`
+              }}
             >
               <div className="flex flex-col md:flex-row md:items-center">
                 <div className="flex-shrink-0 mx-auto md:mx-0 mb-4 md:mb-0 md:mr-6">
                   <img
-                    className="h-24 w-24 rounded-full object-cover border-4 border-blue-100"
+                    className="h-24 w-24 rounded-full object-cover border-4"
+                    style={{ borderColor: 'var(--accent-secondary)' }}
                     src={story.image}
                     alt={`${story.name}`}
+                    loading="lazy"
                   />
                 </div>
                 <div className="flex-1">
                   <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
                     <div>
-                      <h3 className="text-2xl font-semibold text-gray-900">{story.name}</h3>
-                      <p className="text-sm text-gray-500">{story.location}</p>
+                      <h3 className="text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>{story.name}</h3>
+                      <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{story.location}</p>
                     </div>
-                    <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold mt-2 md:mt-0 inline-block">
+                    <div className="mt-2 md:mt-0 inline-block px-3 py-1 rounded-full text-sm font-semibold"
+                      style={{ 
+                        backgroundColor: 'var(--success)',
+                        color: '#ffffff'
+                      }}>
                       {story.result}
                     </div>
                   </div>
-                  <p className="text-gray-600 leading-relaxed">"{story.story}"</p>
+                  <p className="leading-relaxed" style={{ color: 'var(--text-secondary)' }}>"{story.story}"</p>
                 </div>
               </div>
             </motion.div>
@@ -76,7 +87,14 @@ const ClientStories = () => {
         <div className="mt-12 text-center">
           <a 
             href="#qualification-form"
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white transition-all"
+            style={{ 
+              backgroundColor: 'var(--accent-primary)',
+              boxShadow: '0 2px 6px var(--shadow)',
+              transition: `all var(--transition-speed)`
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
           >
             See If You Qualify
             <svg className="ml-2 -mr-1 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

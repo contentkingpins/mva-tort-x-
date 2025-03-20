@@ -29,17 +29,17 @@ const SafetyTips = () => {
   ];
 
   return (
-    <div className="py-16 bg-white">
+    <div className="py-16" style={{ backgroundColor: 'var(--background)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-5">
-            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            <h2 className="text-3xl font-extrabold sm:text-4xl" style={{ color: 'var(--text-primary)' }}>
               Preventing Accidents
             </h2>
-            <p className="mt-3 text-xl text-gray-500">
+            <p className="mt-3 text-xl" style={{ color: 'var(--text-secondary)' }}>
               While we're here to help when accidents happen, we also care about your safety. Follow these tips to reduce your risk on the road.
             </p>
-            <div className="mt-6 relative rounded-xl overflow-hidden h-96 shadow-xl">
+            <div className="mt-6 relative rounded-xl overflow-hidden h-80 md:h-96 shadow-xl">
               <img 
                 src="/images/shutterstock_40377937.jpg" 
                 alt="Driving in rainy weather" 
@@ -53,19 +53,25 @@ const SafetyTips = () => {
             </div>
           </div>
           <div className="mt-12 lg:mt-0 lg:col-span-7">
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
               {tips.map((tip, index) => (
                 <div 
                   key={index}
-                  className="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500 hover:shadow-md transition-shadow"
+                  className="p-5 sm:p-6 rounded-lg border-l-4 hover:shadow-md transition-all touch-friendly-stack"
+                  style={{ 
+                    backgroundColor: 'var(--card-bg)', 
+                    borderLeftColor: 'var(--accent-primary)',
+                    boxShadow: '0 2px 8px var(--shadow)',
+                    transition: `all var(--transition-speed)` 
+                  }}
                 >
-                  <h3 className="text-lg font-semibold text-gray-900">{tip.title}</h3>
-                  <p className="mt-2 text-gray-600">{tip.description}</p>
+                  <h3 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>{tip.title}</h3>
+                  <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>{tip.description}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-8 text-gray-600">
-              <p className="italic">
+            <div className="mt-8 italic text-center sm:text-left" style={{ color: 'var(--text-secondary)' }}>
+              <p>
                 Remember: The best claim is the one you never have to make. Drive safely!
               </p>
             </div>
