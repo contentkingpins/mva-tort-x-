@@ -31,6 +31,7 @@ const QualificationForm = () => {
   const [csrfToken, setCsrfToken] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [referenceId, setReferenceId] = useState('');
   
   // Fetch CSRF token on component mount
   useEffect(() => {
@@ -301,6 +302,10 @@ const QualificationForm = () => {
       setIsLoading(true);
       setFormError(null);
       
+      // Generate reference ID for this submission
+      const generatedRefId = `CL-${Date.now().toString().substring(6)}`;
+      setReferenceId(generatedRefId);
+      
       // Update context with contact information
       updateFormData({
         ...contactInfo,
@@ -527,7 +532,7 @@ const QualificationForm = () => {
               Your information has been received and is being processed. A legal specialist will contact you within 24 hours to discuss your case.
             </p>
             <div className="mt-3 text-sm font-medium">
-              Reference ID: {`CL-${Date.now().toString().substring(6)}`}
+              Reference ID: {referenceId}
             </div>
           </div>
           
