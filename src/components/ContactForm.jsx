@@ -396,6 +396,23 @@ const ContactForm = ({ onSubmit, simplified = false, formError = null, csrfToken
           </p>
         </div>
         
+        {/* TCPA Compliance Checkbox */}
+        <div className="mt-4">
+          <label className="flex items-start">
+            <input
+              type="checkbox"
+              name="tcpaConsent"
+              required
+              className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
+              onChange={(e) => setContactInfo(prev => ({ ...prev, tcpaConsent: e.target.checked }))}
+            />
+            <span className="ml-2 text-sm text-gray-600">
+              I consent to be contacted by automated technology sms for appointment reminders and follow ups regarding my inquiry. I understand this is not a condition of purchase.
+              <span className="text-red-500" aria-hidden="true">*</span>
+            </span>
+          </label>
+        </div>
+        
         <button
           type="submit"
           disabled={isSubmitting || formSubmitted}
