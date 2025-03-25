@@ -42,15 +42,24 @@ const ErrorFallback = ({ error, resetErrorBoundary }) => {
 
 function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const phoneNumber = "8337156010";
+  const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
 
-  // Network status monitoring (React 18 feature: automatic batching in event handlers)
+  // Extract URL parameters to check for test mode
+  const queryParams = new URLSearchParams(window.location.search);
+  const testMode = queryParams.get('testMode');
+  
+  // Force real submission when testMode=live is in the URL
+  const forceRealSubmission = testMode === 'live';
+  
   useEffect(() => {
+    // Event listeners for online/offline status
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-
+    
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-
+    
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -71,10 +80,6 @@ function App() {
     }
     return phoneNumberString;
   };
-
-  // Phone number for click-to-call
-  const phoneNumber = "8337156010";
-  const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
 
   // Show offline message if user is offline
   if (!isOnline) {
@@ -131,7 +136,7 @@ function App() {
               </h2>
               <ErrorBoundary FallbackComponent={ErrorFallback}>
                 <Suspense fallback={<LoadingFallback />}>
-                  <QualificationForm />
+                  <QualificationForm forceRealSubmission={forceRealSubmission} />
                 </Suspense>
               </ErrorBoundary>
             </div>

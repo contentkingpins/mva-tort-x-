@@ -1,0 +1,17 @@
+{
+  "name": "collision-counselor-lead-processor",
+  "version": "1.0.0",
+  "description": "Lambda function for processing collision counselor leads",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.496.0",
+    "@aws-sdk/client-s3": "^3.496.0",
+    "@aws-sdk/client-ssm": "^3.496.0",
+    "@aws-sdk/util-dynamodb": "^3.496.0"
+  },
+  "author": "",
+  "license": "ISC"
+} 

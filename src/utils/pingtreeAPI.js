@@ -3,14 +3,23 @@
  */
 
 // Pingtree API endpoint configuration
-const PARTNER_ID = process.env.REACT_APP_PARTNER_ID || "B40i8"; // Your Partner ID from dashboard
-const API_ENDPOINT = `https://api.pingtree.com/api/lead/add/${PARTNER_ID}`;
-const SUBSCRIPTION_KEY = process.env.REACT_APP_SUBSCRIPTION_KEY || "ff55hh66kk77"; // From TortX
-const CREATIVE_ID = process.env.REACT_APP_CREATIVE_ID || "CT1234"; // From dashboard
-const BEARER_TOKEN = process.env.REACT_APP_PINGTREE_TOKEN || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvZmZlckNhbXBhaWduSWQiOiI2NmZjOWIxMjFkMDM2MmZhODRkZjhlNDQiLCJfaWQiOiI2NzJhZTRmZmFjNThjMWQ1NDIxMjU2YjUiLCJ0eXBlIjoiZm9ybSIsImlhdCI6MTczMDg2NDM5MH0.ZFikIf37APtQzum7eZmABLtIKG-s2OKnVSa92hBbq74";
+const PARTNER_ID = process.env.REACT_APP_PARTNER_ID;
+const API_ENDPOINT = PARTNER_ID ? `https://api.pingtree.com/api/lead/add/${PARTNER_ID}` : null;
+const SUBSCRIPTION_KEY = process.env.REACT_APP_SUBSCRIPTION_KEY;
+const CREATIVE_ID = process.env.REACT_APP_CREATIVE_ID;
+const BEARER_TOKEN = process.env.REACT_APP_PINGTREE_TOKEN;
 
 // Check if we should simulate API responses (dev mode or explicit setting)
 const SIMULATE_API = process.env.REACT_APP_SIMULATE_API === 'true' || process.env.NODE_ENV === 'development';
+
+/**
+ * Validates that all required environment variables are present
+ * @returns {boolean} - Whether all required variables exist
+ */
+const validateEnvironmentVariables = () => {
+  const required = [PARTNER_ID, SUBSCRIPTION_KEY, CREATIVE_ID, BEARER_TOKEN];
+  return required.every(variable => variable !== undefined && variable !== null && variable !== '');
+};
 
 /**
  * Submit lead data to Pingtree API
@@ -21,6 +30,11 @@ const SIMULATE_API = process.env.REACT_APP_SIMULATE_API === 'true' || process.en
 export const submitLeadToPingtree = async (formData, isTest = false) => {
   try {
     console.log("Submitting to Pingtree API with data:", formData);
+    
+    // Verify required environment variables
+    if (!validateEnvironmentVariables()) {
+      throw new Error('Missing required environment variables for Pingtree API');
+    }
     
     // Create a more reliable form data object
     const formUrlData = new URLSearchParams();
@@ -152,7 +166,6 @@ export const submitQualifiedLead = async (qualificationFormData, contactFormData
       ...contactFormData,
       sourceId: `tortx_lead_${Date.now()}`,
       incidentState: contactFormData.incidentState || qualificationFormData.incidentState || "TX",
-      bearerToken: BEARER_TOKEN,
       // Ensure TrustedForm certificate URL is included
       trustedFormCertURL: contactFormData.trustedFormCertURL || qualificationFormData.trustedFormCertURL || null
     };
