@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useFormData } from '../context/FormDataContext';
 import { handleEnrichedCall } from '../utils/ringbaAPI';
+import { refreshTrustedFormCertificate, getTrustedFormCertificateUrl } from '../utils/trustedForm';
 
 const EnhancedClickToCall = ({ 
   phoneNumber, 
@@ -12,7 +13,7 @@ const EnhancedClickToCall = ({
   buttonText,
   showIcon = true 
 }) => {
-  const { formData } = useFormData();
+  const { formData, updateFormData } = useFormData();
   const [isProcessing, setIsProcessing] = useState(false);
   
   // Handle click event
@@ -22,17 +23,33 @@ const EnhancedClickToCall = ({
       e.preventDefault();
       setIsProcessing(true);
       
+      // Refresh TrustedForm certificate
+      await refreshTrustedFormCertificate();
+      const trustedFormCertURL = getTrustedFormCertificateUrl();
+      
+      // If we have a certificate, update the form data
+      if (trustedFormCertURL) {
+        updateFormData({ trustedFormCertURL });
+      }
+      
       // If we have form data, call the Ringba API
       if (formData.accidentDate && formData.incidentState) {
         try {
-          // Call the Ringba API with our form data
-          await handleEnrichedCall(formData, phoneNumber, (result) => {
-            if (result.status === "ok") {
-              console.log("Ringba enrichment successful");
-            } else {
-              console.warn("Ringba enrichment failed:", result);
+          // Call the Ringba API with our form data and TrustedForm certificate
+          await handleEnrichedCall(
+            { 
+              ...formData, 
+              trustedFormCertURL: trustedFormCertURL || formData.trustedFormCertURL 
+            }, 
+            phoneNumber, 
+            (result) => {
+              if (result.status === "ok") {
+                console.log("Ringba enrichment successful");
+              } else {
+                console.warn("Ringba enrichment failed:", result);
+              }
             }
-          });
+          );
         } catch (error) {
           console.error("Error in click-to-call enrichment:", error);
         }

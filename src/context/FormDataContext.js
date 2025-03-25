@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useGeoLocation } from './GeoLocationContext';
 import { getStateFromZip, trackStateEngagement } from '../utils/geolocation';
+import { getPublisherId } from '../utils/urlUtils';
 
 // Create the context
 const FormDataContext = createContext();
@@ -53,7 +54,10 @@ export const FormDataProvider = ({ children }) => {
     
     // Partner tracking data
     partnerId: 'B40i8',
-    geoTargeted: stateCode ? true : false // Flag if user was geo-targeted
+    geoTargeted: stateCode ? true : false, // Flag if user was geo-targeted
+    
+    // Publisher tracking (from URL parameters)
+    pubID: null
   });
 
   // Update form data when geolocation state changes
@@ -67,6 +71,24 @@ export const FormDataProvider = ({ children }) => {
       }));
     }
   }, [stateCode]);
+  
+  // Extract and store publisher ID from URL parameter
+  useEffect(() => {
+    const publisherId = getPublisherId();
+    if (publisherId) {
+      setFormData(prevData => ({
+        ...prevData,
+        pubID: publisherId
+      }));
+      
+      // Optional: track publisher ID for analytics
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'publisher_visit', {
+          'publisher_id': publisherId
+        });
+      }
+    }
+  }, []);
 
   const updateFormData = (newData) => {
     setFormData(prevData => {

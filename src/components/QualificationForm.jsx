@@ -5,6 +5,7 @@ import ContactForm from './ContactForm';
 import EnhancedClickToCall from './EnhancedClickToCall';
 import { useFormData } from '../context/FormDataContext';
 import { submitQualifiedLead } from '../utils/pingtreeAPI';
+import { refreshTrustedFormCertificate, getTrustedFormCertificateUrl } from '../utils/trustedForm';
 
 const QualificationForm = () => {
   const { updateFormData } = useFormData();
@@ -306,19 +307,30 @@ const QualificationForm = () => {
       const generatedRefId = `CL-${Date.now().toString().substring(6)}`;
       setReferenceId(generatedRefId);
       
-      // Update context with contact information
+      // Try to refresh the TrustedForm certificate before submission
+      await refreshTrustedFormCertificate();
+      const trustedFormCertURL = getTrustedFormCertificateUrl();
+      
+      // Update context with contact information and TrustedForm certificate
       updateFormData({
         ...contactInfo,
-        sourceId: `tortx_lead_${Date.now()}` // Generate a unique source ID
+        sourceId: `tortx_lead_${Date.now()}`, // Generate a unique source ID
+        trustedFormCertURL: trustedFormCertURL // Include TrustedForm certificate
       });
       
       // Check if we're in development mode
       const isTestSubmission = process.env.NODE_ENV === 'development';
       
-      // Submit to Pingtree API
+      // Submit to Pingtree API with TrustedForm certificate
       const apiResult = await submitQualifiedLead(
-        formData,
-        contactInfo,
+        {
+          ...formData,
+          trustedFormCertURL: trustedFormCertURL
+        },
+        {
+          ...contactInfo,
+          trustedFormCertURL: trustedFormCertURL
+        },
         isTestSubmission
       );
       

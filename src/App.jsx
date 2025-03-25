@@ -6,6 +6,7 @@ import { FormDataProvider } from './context/FormDataContext';
 import { GeoLocationProvider } from './context/GeoLocationContext';
 import StateContent from './components/StateContent';
 import SimpleHeader from './components/SimpleHeader';
+import { initTrustedForm } from './utils/trustedForm';
 
 // Lazy load components to improve initial load performance
 const QualificationForm = lazy(() => import('./components/QualificationForm'));
@@ -54,6 +55,11 @@ function App() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
+  }, []);
+  
+  // Initialize TrustedForm on component mount
+  useEffect(() => {
+    initTrustedForm();
   }, []);
 
   // Format phone number for display
