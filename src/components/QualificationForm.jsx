@@ -8,7 +8,7 @@ import { submitQualifiedLead } from '../utils/pingtreeAPI';
 import { refreshTrustedFormCertificate, getTrustedFormCertificateUrl } from '../utils/trustedForm';
 import { submitLeadToBackend } from '../utils/leadSubmitAPI';
 
-const QualificationForm = () => {
+const QualificationForm = ({ forceRealSubmission = false }) => {
   const { updateFormData } = useFormData();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
@@ -330,8 +330,8 @@ const QualificationForm = () => {
         trustedFormCertURL: trustedFormCertURL
       });
       
-      // Check if we're in development mode
-      const isTestSubmission = process.env.NODE_ENV === 'development';
+      // Check if we're in development mode, but allow override
+      const isTestSubmission = !forceRealSubmission && process.env.NODE_ENV === 'development';
       
       // Submit to Pingtree API with TrustedForm certificate
       const pingtreeResult = await submitQualifiedLead(

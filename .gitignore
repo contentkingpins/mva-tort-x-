@@ -24,4 +24,14 @@ yarn-error.log*
 .idea/
 .vscode/
 *.swp
-*.swo 
+*.swo
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# AWS credentials
+aws-credentials.json
+*credentials*.json
+*config*.json 
