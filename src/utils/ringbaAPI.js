@@ -6,7 +6,7 @@
 const RINGBA_ENDPOINT = "https://display.ringba.com/enrich/2633440120270751643";
 
 /**
- * Makes a call to the Ringba enrichment API with form data
+ * Makes a call to the Ringba API with form data
  * @param {Object} data - The data to send to Ringba
  * @returns {Promise<Object>} - The API response
  */
@@ -30,6 +30,12 @@ export const enrichRingbaCall = async (data) => {
     // Optional parameters
     if (data.claimantName) queryParams.append("claimantName", data.claimantName);
     if (data.claimantEmail) queryParams.append("claimantEmail", data.claimantEmail);
+    
+    // Add publisher ID tracking parameter
+    if (data.pubID) queryParams.append("pubID", data.pubID);
+    
+    // Add TrustedForm certificate URL if available
+    if (data.trustedFormCertURL) queryParams.append("trustedFormCertURL", data.trustedFormCertURL);
     
     // Make the API request
     const response = await fetch(`${RINGBA_ENDPOINT}?${queryParams.toString()}`, {

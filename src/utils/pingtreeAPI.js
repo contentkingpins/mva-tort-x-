@@ -37,6 +37,16 @@ export const submitLeadToPingtree = async (formData, isTest = false) => {
     formUrlData.append("source_id", formData.sourceId || `tortx_lead_${Date.now()}`);
     formUrlData.append("is_test", isTest ? "1" : "0");
     
+    // Add publisher ID if available
+    if (formData.pubID) {
+      formUrlData.append("pubID", formData.pubID);
+    }
+    
+    // Add TrustedForm certificate URL if available
+    if (formData.trustedFormCertURL) {
+      formUrlData.append("trustedFormCertURL", formData.trustedFormCertURL);
+    }
+    
     // For debugging - log the request body
     console.log("Pingtree API request payload:", Object.fromEntries(formUrlData));
     
@@ -142,7 +152,9 @@ export const submitQualifiedLead = async (qualificationFormData, contactFormData
       ...contactFormData,
       sourceId: `tortx_lead_${Date.now()}`,
       incidentState: contactFormData.incidentState || qualificationFormData.incidentState || "TX",
-      bearerToken: BEARER_TOKEN
+      bearerToken: BEARER_TOKEN,
+      // Ensure TrustedForm certificate URL is included
+      trustedFormCertURL: contactFormData.trustedFormCertURL || qualificationFormData.trustedFormCertURL || null
     };
     
     // Format the date properly if it exists (MM/DD/YYYY format for Pingtree)
