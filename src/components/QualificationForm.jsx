@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProgressBar from './ProgressBar';
 import ContactForm from './ContactForm';
@@ -11,6 +11,8 @@ import { submitLeadToBackend } from '../utils/leadSubmitAPI';
 const QualificationForm = ({ forceRealSubmission = false }) => {
   const { updateFormData } = useFormData();
   const [currentStep, setCurrentStep] = useState(0);
+  const formRef = useRef(null); // Reference to the form
+  const [trustedFormCertURL, setTrustedFormCertURL] = useState(null);
   const [formData, setFormData] = useState({
     accidentDate: null,
     medicalTreatment: null,
@@ -35,7 +37,7 @@ const QualificationForm = ({ forceRealSubmission = false }) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [referenceId, setReferenceId] = useState('');
   
-  // Fetch CSRF token on component mount
+  // Fetch CSRF token on component mount and create hidden TrustedForm field if needed
   useEffect(() => {
     // This would normally fetch from your server
     // Instead, we'll simulate it with a random token
@@ -45,7 +47,35 @@ const QualificationForm = ({ forceRealSubmission = false }) => {
     };
     
     setCsrfToken(generateToken());
-  }, []);
+    
+    // Check for TrustedForm field and create one if it doesn't exist
+    if (formRef.current) {
+      let trustedFormField = document.querySelector('input[name="xxTrustedFormCertUrl"]');
+      
+      if (!trustedFormField) {
+        // Create hidden field if it doesn't exist
+        trustedFormField = document.createElement('input');
+        trustedFormField.type = 'hidden';
+        trustedFormField.name = 'xxTrustedFormCertUrl';
+        formRef.current.appendChild(trustedFormField);
+        
+        console.log('Created hidden TrustedForm field');
+      }
+      
+      // Set up a periodic check for TrustedForm certificate URL
+      const checkInterval = setInterval(() => {
+        const field = document.querySelector('input[name="xxTrustedFormCertUrl"]');
+        if (field && field.value && field.value !== trustedFormCertURL) {
+          console.log('Found TrustedForm certificate URL:', field.value);
+          setTrustedFormCertURL(field.value);
+          clearInterval(checkInterval);
+        }
+      }, 1000);
+      
+      // Clean up
+      return () => clearInterval(checkInterval);
+    }
+  }, [trustedFormCertURL]);
   
   // Update context when form data changes
   useEffect(() => {
@@ -303,6 +333,18 @@ const QualificationForm = ({ forceRealSubmission = false }) => {
     try {
       setIsLoading(true);
       
+      // Try to get the latest TrustedForm certificate URL
+      await refreshTrustedFormCertificate();
+      const certURL = getTrustedFormCertificateUrl();
+      
+      // Check for TrustedForm field directly
+      let directCertURL = null;
+      const trustedFormField = document.querySelector('input[name="xxTrustedFormCertUrl"]');
+      if (trustedFormField && trustedFormField.value) {
+        directCertURL = trustedFormField.value;
+        console.log('Found TrustedForm certificate from field:', directCertURL);
+      }
+      
       // Generate a reference ID for this lead
       const generatedRefId = `CL-${Math.floor(Math.random() * 10000000)}`;
       
@@ -311,18 +353,21 @@ const QualificationForm = ({ forceRealSubmission = false }) => {
         ...formData,
         ...contactInfo,
         sourceId: `tortx_lead_${Date.now()}`,
-        trustedFormCertURL: getTrustedFormCertificateUrl(), // Include TrustedForm certificate
+        trustedFormCertURL: directCertURL || certURL || trustedFormCertURL, // Try all possible sources
         lead_id: generatedRefId,
         submissionTime: new Date().toISOString(),
         source: 'collision-counselor',
         pubID: new URLSearchParams(window.location.search).get('pubID') || null
       };
       
+      // Log TrustedForm certificate URL for debugging
+      console.log('Using TrustedForm certificate URL:', completeLeadData.trustedFormCertURL);
+      
       // Update context with contact information and TrustedForm certificate
       updateFormData({
         ...contactInfo,
         sourceId: completeLeadData.sourceId,
-        trustedFormCertURL: getTrustedFormCertificateUrl()
+        trustedFormCertURL: completeLeadData.trustedFormCertURL
       });
       
       // Submit to Pingtree API with TrustedForm certificate
@@ -331,11 +376,11 @@ const QualificationForm = ({ forceRealSubmission = false }) => {
         pingtreeResult = await submitQualifiedLead(
           {
             ...formData,
-            trustedFormCertURL: getTrustedFormCertificateUrl()
+            trustedFormCertURL: completeLeadData.trustedFormCertURL
           },
           {
             ...contactInfo,
-            trustedFormCertURL: getTrustedFormCertificateUrl()
+            trustedFormCertURL: completeLeadData.trustedFormCertURL
           },
           forceRealSubmission
         );
@@ -704,54 +749,59 @@ const QualificationForm = ({ forceRealSubmission = false }) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-2xl p-8 border border-gray-100">
-      <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">
-        Free Claim Evaluation
-      </h2>
-      
-      {currentStep < questions.length && (
-        <ProgressBar 
-          currentStep={currentStep} 
-          totalSteps={questions.length} 
-        />
-      )}
-      
-      <AnimatePresence mode="wait">
-        {currentStep < questions.length ? renderQuestion() : renderResults()}
-      </AnimatePresence>
-      
-      {/* Only show loading indicator when submitting the form, not during transitions */}
-      {isLoading && currentStep >= questions.length && (
-        <div className="flex justify-center mt-4">
-          <p className="text-blue-500 font-medium">Processing...</p>
-        </div>
-      )}
-      
-      {currentStep < questions.length && (
-        <div className="flex justify-between mt-8">
-          {currentStep > 0 ? (
+    <div id="qualification-form" className="bg-white rounded-lg shadow-md max-w-2xl mx-auto overflow-hidden">
+      {/* Main form */}
+      <form ref={formRef} onSubmit={(e) => e.preventDefault()} className="p-6">
+        {/* Hidden field for TrustedForm manually added */}
+        <input type="hidden" name="xxTrustedFormCertUrl" value={trustedFormCertURL || ''} />
+        <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">
+          Free Claim Evaluation
+        </h2>
+        
+        {currentStep < questions.length && (
+          <ProgressBar 
+            currentStep={currentStep} 
+            totalSteps={questions.length} 
+          />
+        )}
+        
+        <AnimatePresence mode="wait">
+          {currentStep < questions.length ? renderQuestion() : renderResults()}
+        </AnimatePresence>
+        
+        {/* Only show loading indicator when submitting the form, not during transitions */}
+        {isLoading && currentStep >= questions.length && (
+          <div className="flex justify-center mt-4">
+            <p className="text-blue-500 font-medium">Processing...</p>
+          </div>
+        )}
+        
+        {currentStep < questions.length && (
+          <div className="flex justify-between mt-8">
+            {currentStep > 0 ? (
+              <button
+                onClick={handleBack}
+                className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                type="button"
+                disabled={isTransitioning}
+              >
+                Back
+              </button>
+            ) : (
+              <div></div> // Empty div to maintain flex spacing
+            )}
+            
             <button
-              onClick={handleBack}
-              className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+              onClick={currentStep === questions.length - 1 ? handleSubmit : handleNext}
+              className={`px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${isTransitioning ? 'opacity-70 cursor-not-allowed' : ''}`}
               type="button"
               disabled={isTransitioning}
             >
-              Back
+              {currentStep === questions.length - 1 ? 'Submit' : 'Next'}
             </button>
-          ) : (
-            <div></div> // Empty div to maintain flex spacing
-          )}
-          
-          <button
-            onClick={currentStep === questions.length - 1 ? handleSubmit : handleNext}
-            className={`px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${isTransitioning ? 'opacity-70 cursor-not-allowed' : ''}`}
-            type="button"
-            disabled={isTransitioning}
-          >
-            {currentStep === questions.length - 1 ? 'Submit' : 'Next'}
-          </button>
-        </div>
-      )}
+          </div>
+        )}
+      </form>
     </div>
   );
 };
