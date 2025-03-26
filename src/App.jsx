@@ -42,6 +42,17 @@ const ErrorFallback = ({ error, resetErrorBoundary }) => {
 
 function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  
+  // Format phone number for display - MOVED THIS FUNCTION UP
+  const formatPhoneNumber = (phoneNumberString) => {
+    const cleaned = ('' + phoneNumberString).replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    if (match) {
+      return '(' + match[1] + ') ' + match[2] + '-' + match[3];
+    }
+    return phoneNumberString;
+  };
+  
   const phoneNumber = "8337156010";
   const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
 
@@ -70,16 +81,6 @@ function App() {
   useEffect(() => {
     initTrustedForm();
   }, []);
-
-  // Format phone number for display
-  const formatPhoneNumber = (phoneNumberString) => {
-    const cleaned = ('' + phoneNumberString).replace(/\D/g, '');
-    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
-    if (match) {
-      return '(' + match[1] + ') ' + match[2] + '-' + match[3];
-    }
-    return phoneNumberString;
-  };
 
   // Show offline message if user is offline
   if (!isOnline) {
