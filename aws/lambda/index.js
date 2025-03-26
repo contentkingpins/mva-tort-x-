@@ -45,6 +45,21 @@ exports.handler = async (event) => {
         // Extract data from the event
         const leadData = typeof event === 'string' ? JSON.parse(event) : event;
         
+        // Validate required fields
+        if (!leadData.lead_id) {
+            console.warn('Missing lead_id in submission, generating a new one');
+            leadData.lead_id = `CL-${Math.floor(Math.random() * 10000000)}`;
+        }
+        
+        // Security: Sanitize phone number to ensure only digits
+        if (leadData.mobile) {
+            leadData.mobile = leadData.mobile.toString().replace(/\D/g, '');
+        }
+        
+        if (leadData.phone) {
+            leadData.phone = leadData.phone.toString().replace(/\D/g, '');
+        }
+        
         // Generate date-based path for S3 storage
         const now = new Date();
         const year = now.getFullYear();
@@ -54,23 +69,33 @@ exports.handler = async (event) => {
         
         // Store lead data in S3
         console.log(`Storing lead data in S3: ${filePath}`);
-        await s3Client.send(
-            new PutObjectCommand({
-                Bucket: BUCKET_NAME,
-                Key: filePath,
-                Body: JSON.stringify(leadData, null, 2),
-                ContentType: 'application/json'
-            })
-        );
+        try {
+            await s3Client.send(
+                new PutObjectCommand({
+                    Bucket: BUCKET_NAME,
+                    Key: filePath,
+                    Body: JSON.stringify(leadData, null, 2),
+                    ContentType: 'application/json'
+                })
+            );
+        } catch (error) {
+            console.error('Error storing lead data in S3:', error);
+            // Continue with the rest of the process
+        }
         
         // Store lead data in DynamoDB
         console.log('Storing lead data in DynamoDB');
-        await dynamoClient.send(
-            new PutItemCommand({
-                TableName: TABLE_NAME,
-                Item: marshall(leadData)
-            })
-        );
+        try {
+            await dynamoClient.send(
+                new PutItemCommand({
+                    TableName: TABLE_NAME,
+                    Item: marshall(leadData)
+                })
+            );
+        } catch (error) {
+            console.error('Error storing lead data in DynamoDB:', error);
+            // Continue with the rest of the process
+        }
         
         // Claim TrustedForm certificate if URL is present and API key is available
         if (leadData.trustedFormCertURL && TRUSTED_FORM_API_KEY) {
@@ -81,6 +106,8 @@ exports.handler = async (event) => {
                 console.error('Error claiming TrustedForm certificate:', error);
                 // Continue processing even if certificate claiming fails
             }
+        } else if (!leadData.trustedFormCertURL) {
+            console.warn('No TrustedForm certificate URL provided in lead data');
         }
         
         // Forward lead to Ringba for call transfer
@@ -123,6 +150,7 @@ async function claimTrustedFormCertificate(certUrl, leadData) {
         }
         
         console.log(`Claiming TrustedForm certificate: ${certUrl}`);
+        console.log(`Using API key: ${TRUSTED_FORM_API_KEY.substring(0, 5)}...`); // Log part of the key for debugging
         
         // Prepare the claim data
         const claimData = {
@@ -133,26 +161,43 @@ async function claimTrustedFormCertificate(certUrl, leadData) {
             lastname: leadData.lastName,
             source: 'Collision Counselor Form'
         };
+
+        // Log claim data for debugging
+        console.log('TrustedForm claim data:', JSON.stringify(claimData));
+        
+        // Format the authorization header properly
+        // TrustedForm requires "API_KEY:" format (with the colon)
+        const authString = Buffer.from(`${TRUSTED_FORM_API_KEY}:`).toString('base64');
+        console.log('Auth string length:', authString.length);
         
         // Make the API request to claim the certificate
         const response = await fetch(certUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': `Basic ${Buffer.from(`${TRUSTED_FORM_API_KEY}:`).toString('base64')}`
+                'Authorization': `Basic ${authString}`,
+                'Accept': 'application/json'
             },
             body: new URLSearchParams(claimData)
         });
         
+        // Log response headers for debugging
+        console.log('TrustedForm response status:', response.status);
+        console.log('TrustedForm response status text:', response.statusText);
+        
         if (!response.ok) {
+            const errorResponse = await response.text();
+            console.error('TrustedForm error response body:', errorResponse);
             throw new Error(`TrustedForm API error: ${response.status} ${response.statusText}`);
         }
         
         const result = await response.json();
+        console.log('TrustedForm claim successful:', JSON.stringify(result));
         return result;
     } catch (error) {
         console.error('Error claiming TrustedForm certificate:', error);
-        throw error;
+        // Don't throw the error - continue processing the lead
+        return null;
     }
 }
 
