@@ -88,7 +88,8 @@ export const submitLeadToPingtree = async (formData, isTest = false) => {
         'Authorization': `Bearer ${BEARER_TOKEN}`,
         'Accept': 'application/json'
       },
-      body: formUrlData
+      body: formUrlData,
+      mode: 'no-cors' // Add no-cors mode to avoid CORS errors
     });
     
     // Check for HTTP errors

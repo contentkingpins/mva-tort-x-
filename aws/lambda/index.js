@@ -171,15 +171,11 @@ async function forwardToRingba(leadData) {
         params.append('claimantEmail', leadData.email || '');
         params.append('sourceId', leadData.lead_id || `CL-${Date.now()}`);
         
-        // Add TrustedForm certificate URL if available
-        if (leadData.trustedFormCertURL) {
-            params.append('trustedFormCertURL', leadData.trustedFormCertURL);
-        }
+        // Always include trustedFormCertURL even if null (convert to empty string)
+        params.append('trustedFormCertURL', leadData.trustedFormCertURL || '');
         
-        // Add the pubID if available (for tracking)
-        if (leadData.pubID) {
-            params.append('pubID', leadData.pubID);
-        }
+        // Always include pubID (with fallback to empty string)
+        params.append('pubID', leadData.pubID || '');
         
         // Format incident date (MM/DD/YYYY)
         let incidentDateFormatted = '';
