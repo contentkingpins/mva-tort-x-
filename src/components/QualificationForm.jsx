@@ -35,7 +35,7 @@ const QualificationForm = ({ forceRealSubmission = false }) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [referenceId, setReferenceId] = useState('');
   
-  // Fetch CSRF token on component mount and create hidden TrustedForm field if needed
+  // Fetch CSRF token on component mount
   useEffect(() => {
     // This would normally fetch from your server
     // Instead, we'll simulate it with a random token
@@ -45,35 +45,7 @@ const QualificationForm = ({ forceRealSubmission = false }) => {
     };
     
     setCsrfToken(generateToken());
-    
-    // Check for TrustedForm field and create one if it doesn't exist
-    if (formRef.current) {
-      let trustedFormField = document.querySelector('input[name="xxTrustedFormCertUrl"]');
-      
-      if (!trustedFormField) {
-        // Create hidden field if it doesn't exist
-        trustedFormField = document.createElement('input');
-        trustedFormField.type = 'hidden';
-        trustedFormField.name = 'xxTrustedFormCertUrl';
-        formRef.current.appendChild(trustedFormField);
-        
-        console.log('Created hidden TrustedForm field');
-      }
-      
-      // Set up a periodic check for TrustedForm certificate URL
-      const checkInterval = setInterval(() => {
-        const field = document.querySelector('input[name="xxTrustedFormCertUrl"]');
-        if (field && field.value && field.value !== trustedFormCertURL) {
-          console.log('Found TrustedForm certificate URL:', field.value);
-          setTrustedFormCertURL(field.value);
-          clearInterval(checkInterval);
-        }
-      }, 1000);
-      
-      // Clean up
-      return () => clearInterval(checkInterval);
-    }
-  }, [trustedFormCertURL]);
+  }, []);
   
   // Update context when form data changes
   useEffect(() => {
