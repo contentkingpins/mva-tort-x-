@@ -42,6 +42,23 @@
       }
     </script>
     
+    <!-- TrustedForm -->
+    <script type="text/javascript" data-feature="trustedform">
+    (function() {
+        var tf = document.createElement('script');
+        tf.type = 'text/javascript';
+        tf.async = true;
+        tf.src = ("https:" == document.location.protocol ? 'https' : 'http') + 
+            "://api.trustedform.com/trustedform.js?field=xxTrustedFormCertUrl&amp;ping_hidden=true&amp;l=" + 
+            new Date().getTime() + Math.random();
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(tf, s);
+    })();
+    </script>
+    <noscript>
+      <img src="https://api.trustedform.com/ns.gif" />
+    </noscript>
+    <!-- End TrustedForm -->
+    
     <title>Claim Connectors | Free Case Evaluation</title>
   </head>
   <body>

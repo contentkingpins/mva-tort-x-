@@ -7,6 +7,7 @@ import { GeoLocationProvider } from './context/GeoLocationContext';
 import StateContent from './components/StateContent';
 import SimpleHeader from './components/SimpleHeader';
 import { initTrustedForm } from './utils/trustedForm';
+import { getAllFeatureFlags } from './utils/featureFlags';
 
 // Lazy load components to improve initial load performance
 const QualificationForm = lazy(() => import('./components/QualificationForm'));
@@ -79,6 +80,8 @@ function App() {
   
   // Initialize TrustedForm on component mount
   useEffect(() => {
+    // Debug log the feature flags
+    console.log('Feature flags:', getAllFeatureFlags());
     initTrustedForm();
   }, []);
 
