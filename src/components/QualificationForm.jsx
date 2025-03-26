@@ -302,65 +302,58 @@ const QualificationForm = ({ forceRealSubmission = false }) => {
   const handleSubmitContactInfo = async (contactInfo) => {
     try {
       setIsLoading(true);
-      setFormError(null);
       
-      // Generate reference ID for this submission
-      const generatedRefId = `CL-${Date.now().toString().substring(6)}`;
-      setReferenceId(generatedRefId);
+      // Generate a reference ID for this lead
+      const generatedRefId = `CL-${Math.floor(Math.random() * 10000000)}`;
       
-      // Try to refresh the TrustedForm certificate before submission
-      await refreshTrustedFormCertificate();
-      const trustedFormCertURL = getTrustedFormCertificateUrl();
-      
-      // Create complete lead data
+      // Prepare complete lead data
       const completeLeadData = {
         ...formData,
         ...contactInfo,
-        sourceId: `tortx_lead_${Date.now()}`, // Generate a unique source ID
-        trustedFormCertURL: trustedFormCertURL, // Include TrustedForm certificate
+        sourceId: `tortx_lead_${Date.now()}`,
+        trustedFormCertURL: getTrustedFormCertificateUrl(), // Include TrustedForm certificate
         lead_id: generatedRefId,
         submissionTime: new Date().toISOString(),
-        source: 'collision-counselor'
+        source: 'collision-counselor',
+        pubID: new URLSearchParams(window.location.search).get('pubID') || null
       };
       
       // Update context with contact information and TrustedForm certificate
       updateFormData({
         ...contactInfo,
         sourceId: completeLeadData.sourceId,
-        trustedFormCertURL: trustedFormCertURL
+        trustedFormCertURL: getTrustedFormCertificateUrl()
       });
       
-      // Check if we're in development mode, but allow override
-      const isTestSubmission = !forceRealSubmission && process.env.NODE_ENV === 'development';
-      
       // Submit to Pingtree API with TrustedForm certificate
-      const pingtreeResult = await submitQualifiedLead(
-        {
-          ...formData,
-          trustedFormCertURL: trustedFormCertURL
-        },
-        {
-          ...contactInfo,
-          trustedFormCertURL: trustedFormCertURL
-        },
-        isTestSubmission
-      );
+      let pingtreeResult;
+      try {
+        pingtreeResult = await submitQualifiedLead(
+          {
+            ...formData,
+            trustedFormCertURL: getTrustedFormCertificateUrl()
+          },
+          {
+            ...contactInfo,
+            trustedFormCertURL: getTrustedFormCertificateUrl()
+          },
+          forceRealSubmission
+        );
+      } catch (error) {
+        console.error("Error submitting to Pingtree:", error.message);
+        // Continue anyway - we'll use the Lambda function as backup
+        pingtreeResult = { status: "error", message: error.message };
+      }
       
       // Submit to our backend API for S3 and DynamoDB storage
       const backendResult = await submitLeadToBackend(completeLeadData);
       
-      // Check if Pingtree submission was successful
-      if (pingtreeResult.status === "error") {
+      // Only display an error if both submissions fail
+      if (pingtreeResult.status === "error" && backendResult.status === "error") {
         console.error("Error submitting to Pingtree:", pingtreeResult.message);
+        console.error("Error submitting to backend:", backendResult.message);
         setFormError("We encountered an issue submitting your information. Please try again or call us directly.");
         return;
-      }
-      
-      // Check if backend submission was successful
-      if (backendResult.status === "error") {
-        console.error("Error submitting to backend:", backendResult.message);
-        // Continue anyway since Pingtree was successful
-        console.log("Continuing despite backend error");
       }
       
       // Set form as submitted on success
