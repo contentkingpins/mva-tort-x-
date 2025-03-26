@@ -13,26 +13,36 @@ export const initTrustedForm = () => {
     // Skip if running in an environment without a document (SSR)
     if (typeof document === 'undefined') return;
     
-    // Skip if the script is already loaded
-    if (document.getElementById('trusted-form-script')) return;
+    // We don't need to add the script as it's already in index.html
+    // Just set up the event listeners and polling for the certificate URL
     
-    // Create and append TrustedForm script
-    const script = document.createElement('script');
-    script.id = 'trusted-form-script';
-    script.type = 'text/javascript';
-    script.async = true;
-    script.src = '//monitoring-scripts.s3.amazonaws.com/sdk/v1/trusted-form.min.js';
-    
-    // Add script to document
-    document.head.appendChild(script);
-    
-    // Add event listener for when TrustedForm is loaded and certificate is available
-    window.addEventListener('TrustedFormReady', () => {
-      if (window.TrustedForm && window.TrustedForm.certificate) {
-        trustedFormCertificateUrl = window.TrustedForm.certificate.url;
-        console.log('TrustedForm certificate URL:', trustedFormCertificateUrl);
+    // Check for existing hidden field first
+    const checkForCertificateUrl = () => {
+      const certField = document.querySelector('input[name="xxTrustedFormCertUrl"]');
+      if (certField && certField.value) {
+        trustedFormCertificateUrl = certField.value;
+        console.log('TrustedForm certificate URL found:', trustedFormCertificateUrl);
+        return true;
       }
-    });
+      return false;
+    };
+    
+    // If we already have a certificate value, use it
+    if (checkForCertificateUrl()) {
+      return;
+    }
+    
+    // Otherwise, set up polling to check for it
+    const intervalId = setInterval(() => {
+      if (checkForCertificateUrl()) {
+        clearInterval(intervalId);
+      }
+    }, 1000); // Check every second
+    
+    // Clean up interval after 30 seconds
+    setTimeout(() => {
+      clearInterval(intervalId);
+    }, 30000);
   } catch (error) {
     console.error('Error initializing TrustedForm:', error);
   }
@@ -48,10 +58,13 @@ export const getTrustedFormCertificateUrl = () => {
     return trustedFormCertificateUrl;
   }
   
-  // Try to get from window object (in case initTrustedForm wasn't called)
-  if (typeof window !== 'undefined' && window.TrustedForm && window.TrustedForm.certificate) {
-    trustedFormCertificateUrl = window.TrustedForm.certificate.url;
-    return trustedFormCertificateUrl;
+  // Try to get from the hidden input field the official script creates
+  if (typeof document !== 'undefined') {
+    const certField = document.querySelector('input[name="xxTrustedFormCertUrl"]');
+    if (certField && certField.value) {
+      trustedFormCertificateUrl = certField.value;
+      return trustedFormCertificateUrl;
+    }
   }
   
   return null;
@@ -63,31 +76,26 @@ export const getTrustedFormCertificateUrl = () => {
  */
 export const refreshTrustedFormCertificate = () => {
   return new Promise((resolve) => {
-    if (typeof window === 'undefined' || !window.TrustedForm) {
+    if (typeof document === 'undefined') {
       resolve(null);
       return;
     }
     
     try {
-      // Try to refresh the certificate
-      if (window.TrustedForm.refresh) {
-        window.TrustedForm.refresh();
-        
-        // Wait a short time for the refresh to complete
-        setTimeout(() => {
-          if (window.TrustedForm && window.TrustedForm.certificate) {
-            trustedFormCertificateUrl = window.TrustedForm.certificate.url;
-            resolve(trustedFormCertificateUrl);
-          } else {
-            resolve(null);
-          }
-        }, 100);
-      } else {
-        // If no refresh method, just try to get the current certificate
-        if (window.TrustedForm && window.TrustedForm.certificate) {
-          trustedFormCertificateUrl = window.TrustedForm.certificate.url;
-        }
+      // Get the latest certificate URL from the hidden field
+      const certField = document.querySelector('input[name="xxTrustedFormCertUrl"]');
+      if (certField && certField.value) {
+        trustedFormCertificateUrl = certField.value;
         resolve(trustedFormCertificateUrl);
+      } else {
+        // If no field found, try again after a short delay
+        setTimeout(() => {
+          const retryField = document.querySelector('input[name="xxTrustedFormCertUrl"]');
+          if (retryField && retryField.value) {
+            trustedFormCertificateUrl = retryField.value;
+          }
+          resolve(trustedFormCertificateUrl);
+        }, 500);
       }
     } catch (error) {
       console.error('Error refreshing TrustedForm certificate:', error);
