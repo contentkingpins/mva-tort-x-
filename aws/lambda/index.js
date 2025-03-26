@@ -15,7 +15,7 @@ const ssmClient = new SSMClient({ region: 'us-east-1' });
 const BUCKET_NAME = 'collision-counselor-leads';
 const TABLE_NAME = 'collision-counselor-leads';
 const PARAMETER_NAME = '/collision-counselor/trusted-form-api-key';
-const RINGBA_ENDPOINT = 'https://display.ringba.com/enrich/263344012027075163';
+const RINGBA_ENDPOINT = 'https://display.ringba.com/enrich/2633440120270751643';
 
 // Retrieve API key from Parameter Store
 let TRUSTED_FORM_API_KEY = null;
@@ -164,12 +164,17 @@ async function forwardToRingba(leadData) {
         // Prepare Ringba parameters based on the specification
         const params = new URLSearchParams();
         
-        // Map the lead data to Ringba parameters
+        // Map the lead data to Ringba parameters - using exact parameter names from spec
         params.append('isTest', process.env.IS_PRODUCTION === 'true' ? '0' : '1');
-        params.append('callerId', (leadData.mobile || leadData.phone || '').replace(/\D/g, ''));
+        params.append('callerid', (leadData.mobile || leadData.phone || '').replace(/\D/g, ''));
         params.append('claimantName', `${leadData.firstName || ''} ${leadData.lastName || ''}`.trim());
         params.append('claimantEmail', leadData.email || '');
         params.append('sourceId', leadData.lead_id || `CL-${Date.now()}`);
+        
+        // Add TrustedForm certificate URL if available
+        if (leadData.trustedFormCertURL) {
+            params.append('trustedFormCertURL', leadData.trustedFormCertURL);
+        }
         
         // Add the pubID if available (for tracking)
         if (leadData.pubID) {
