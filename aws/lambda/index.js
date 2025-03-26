@@ -201,13 +201,15 @@ async function forwardToRingba(leadData) {
         console.log('Sending request to Ringba:', RINGBA_ENDPOINT);
         console.log('Ringba parameters:', Object.fromEntries(params));
         
-        // Send the request to Ringba
-        const response = await fetch(`${RINGBA_ENDPOINT}`, {
-            method: 'POST',
+        // Build URL with query parameters
+        const url = `${RINGBA_ENDPOINT}?${params.toString()}`;
+        
+        // Send the request to Ringba using GET instead of POST
+        const response = await fetch(url, {
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: params
+                'Accept': 'application/json'
+            }
         });
         
         if (!response.ok) {
