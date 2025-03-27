@@ -5,6 +5,8 @@
 import { isFeatureEnabled } from './featureFlags';
 
 let trustedFormCertificateUrl = null;
+let trustedFormCheckCount = 0;
+const MAX_CHECK_ATTEMPTS = 30; // Limit the number of checks
 
 /**
  * Initialize TrustedForm script and tracking
@@ -21,8 +23,19 @@ export const initTrustedForm = () => {
     // Skip if running in an environment without a document (SSR)
     if (typeof document === 'undefined') return;
     
+    // Security check - only proceed if on HTTPS unless in development
+    if (typeof window !== 'undefined' && 
+        window.location.protocol !== 'https:' && 
+        window.location.hostname !== 'localhost' &&
+        !window.location.hostname.includes('127.0.0.1')) {
+      console.warn('TrustedForm requires HTTPS for security. Integration disabled on insecure connection.');
+      return;
+    }
+    
     // The script is already in index.html, so we just need to check for the field
     const checkForCertificate = () => {
+      trustedFormCheckCount++;
+      
       try {
         // Check for the hidden input field that TrustedForm creates
         const field = document.querySelector('input[name="xxTrustedFormCertUrl"]');
@@ -34,6 +47,13 @@ export const initTrustedForm = () => {
       } catch (err) {
         console.error('Error checking for TrustedForm certificate:', err);
       }
+      
+      // Stop checking after max attempts
+      if (trustedFormCheckCount >= MAX_CHECK_ATTEMPTS) {
+        console.warn(`TrustedForm certificate not found after ${MAX_CHECK_ATTEMPTS} attempts. Giving up.`);
+        return true; // Return true to stop the interval
+      }
+      
       return false;
     };
     
@@ -50,7 +70,12 @@ export const initTrustedForm = () => {
     
     // Clear the interval after 30 seconds to avoid memory leaks
     setTimeout(() => {
-      clearInterval(intervalId);
+      if (intervalId) {
+        clearInterval(intervalId);
+        if (!trustedFormCertificateUrl) {
+          console.warn('TrustedForm certificate not found after timeout. This may be due to browser privacy settings or script blocking.');
+        }
+      }
     }, 30000);
   } catch (error) {
     console.error('Error initializing TrustedForm:', error);
@@ -77,8 +102,14 @@ export const getTrustedFormCertificateUrl = () => {
     try {
       const field = document.querySelector('input[name="xxTrustedFormCertUrl"]');
       if (field && field.value) {
-        trustedFormCertificateUrl = field.value;
-        return trustedFormCertificateUrl;
+        // Validate the certificate URL format for security
+        const certUrl = field.value.trim();
+        if (certUrl.startsWith('https://cert.trustedform.com/')) {
+          trustedFormCertificateUrl = certUrl;
+          return trustedFormCertificateUrl;
+        } else {
+          console.warn('Invalid TrustedForm certificate URL format:', certUrl);
+        }
       }
     } catch (err) {
       console.error('Error getting TrustedForm certificate:', err);
@@ -109,9 +140,14 @@ export const refreshTrustedFormCertificate = () => {
       // Try to get the latest certificate URL from the hidden field
       const field = document.querySelector('input[name="xxTrustedFormCertUrl"]');
       if (field && field.value) {
-        trustedFormCertificateUrl = field.value;
-        resolve(trustedFormCertificateUrl);
-        return;
+        const certUrl = field.value.trim();
+        if (certUrl.startsWith('https://cert.trustedform.com/')) {
+          trustedFormCertificateUrl = certUrl;
+          resolve(trustedFormCertificateUrl);
+          return;
+        } else {
+          console.warn('Invalid TrustedForm certificate URL format during refresh:', certUrl);
+        }
       }
       
       // If no field found, check again after a brief delay
@@ -119,7 +155,12 @@ export const refreshTrustedFormCertificate = () => {
         try {
           const retryField = document.querySelector('input[name="xxTrustedFormCertUrl"]');
           if (retryField && retryField.value) {
-            trustedFormCertificateUrl = retryField.value;
+            const certUrl = retryField.value.trim();
+            if (certUrl.startsWith('https://cert.trustedform.com/')) {
+              trustedFormCertificateUrl = certUrl;
+            } else {
+              console.warn('Invalid TrustedForm certificate URL format during retry:', certUrl);
+            }
           }
         } catch (err) {
           console.error('Error refreshing TrustedForm certificate:', err);
