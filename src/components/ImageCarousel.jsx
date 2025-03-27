@@ -5,6 +5,7 @@ const ImageCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState({});
   const [allImagesLoaded, setAllImagesLoaded] = useState(false);
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
   const carouselRef = useRef(null);
   
   const images = [
@@ -67,16 +68,28 @@ const ImageCarousel = () => {
     }
   }, [imagesLoaded, images.length]);
 
+  // Add a timeout to stop showing loading indicator after 5 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!allImagesLoaded) {
+        setLoadingTimedOut(true);
+        console.log('Image loading timed out, showing default content');
+      }
+    }, 5000);
+    
+    return () => clearTimeout(timer);
+  }, [allImagesLoaded]);
+
   // Auto-rotate carousel
   useEffect(() => {
-    if (!allImagesLoaded) return;
+    if (!allImagesLoaded && !loadingTimedOut) return;
     
     const interval = setInterval(() => {
       setCurrentIndex(prevIndex => (prevIndex + 1) % images.length);
     }, 5000);
     
     return () => clearInterval(interval);
-  }, [allImagesLoaded, images.length]);
+  }, [allImagesLoaded, loadingTimedOut, images.length]);
 
   const handleNext = () => {
     setCurrentIndex(prevIndex => (prevIndex + 1) % images.length);
@@ -105,7 +118,7 @@ const ImageCarousel = () => {
   return (
     <div className="relative w-full max-w-5xl mx-auto my-12 rounded-xl overflow-hidden shadow-2xl" ref={carouselRef}>
       <div className="relative h-96 md:h-[500px] bg-gray-900">
-        {!allImagesLoaded && (
+        {!allImagesLoaded && !loadingTimedOut && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-800 text-white">
             <div className="flex flex-col items-center">
               <p className="text-lg font-medium">Loading images...</p>
@@ -123,7 +136,7 @@ const ImageCarousel = () => {
             className="absolute inset-0"
           >
             <div className="absolute inset-0 bg-black/50 z-10"></div>
-            {imagesLoaded[currentIndex] !== false ? (
+            {(imagesLoaded[currentIndex] !== false && !loadingTimedOut) ? (
               <img 
                 src={images[currentIndex].src} 
                 alt={images[currentIndex].alt}

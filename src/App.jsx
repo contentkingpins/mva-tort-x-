@@ -19,11 +19,29 @@ const ClientStories = lazy(() => import('./components/ClientStories'));
 const SafetyTips = lazy(() => import('./components/SafetyTips'));
 
 // Loading fallback component
-const LoadingFallback = () => (
-  <div className="flex justify-center items-center p-8">
-    <div className="text-blue-500 font-medium">Loading...</div>
-  </div>
-);
+const LoadingFallback = () => {
+  const [showFallbackContent, setShowFallbackContent] = useState(true);
+  
+  // Add a timeout to hide loading indicator after 5 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowFallbackContent(false);
+    }, 5000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // If the loading takes too long, show empty div instead of loading indicator
+  if (!showFallbackContent) {
+    return <div className="p-4 min-h-[100px]"></div>;
+  }
+  
+  return (
+    <div className="flex justify-center items-center p-8">
+      <div className="text-blue-500 font-medium">Loading...</div>
+    </div>
+  );
+};
 
 // Error fallback component
 const ErrorFallback = ({ error, resetErrorBoundary }) => {

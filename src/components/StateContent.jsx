@@ -9,6 +9,7 @@ import EnhancedClickToCall from './EnhancedClickToCall';
 const StateContent = () => {
   const { stateCode, stateName, content, isLoading, isSupported, allStates, updateUserState } = useGeoLocation();
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
 
   // Track state view on component mount
   useEffect(() => {
@@ -18,6 +19,23 @@ const StateContent = () => {
       setInitialLoadComplete(true);
     }
   }, [stateCode, isLoading]);
+  
+  // Add a timeout to stop showing loading indicator after 5 seconds
+  useEffect(() => {
+    let timer;
+    if (isLoading && !initialLoadComplete) {
+      timer = setTimeout(() => {
+        setLoadingTimedOut(true);
+        // Use default values if loading is taking too long
+        setInitialLoadComplete(true);
+        console.log('State content loading timed out, showing default content');
+      }, 3000);
+    }
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isLoading, initialLoadComplete]);
 
   // Track state change when user manually selects a state
   const handleStateChange = (newStateCode) => {
@@ -26,13 +44,24 @@ const StateContent = () => {
   };
 
   // Only show loading indicator on initial load, not during state changes
-  if (isLoading && !initialLoadComplete) {
+  if (isLoading && !initialLoadComplete && !loadingTimedOut) {
     return (
       <div className="p-4 text-center">
         <p className="text-gray-500">Personalizing your experience...</p>
       </div>
     );
   }
+
+  // Use default values for state if loading times out or fails
+  const effectiveStateCode = stateCode || 'FL';
+  const effectiveStateName = stateName || 'Florida';
+  const effectiveContent = content || {
+    subheadline: "Helping accident victims seek fair compensation.",
+    statistic: "In Florida, you generally have 4 years from the date of the accident to file a personal injury lawsuit.",
+    legalInfo: "Florida is a no-fault state, which affects how insurance claims are processed.",
+    maxDamages: "There's no cap on economic damages, but non-economic damages may be limited in some cases."
+  };
+  const effectiveIsSupported = isSupported !== undefined ? isSupported : true;
 
   // Group states by region for better organization in the dropdown
   const regions = {
@@ -60,7 +89,7 @@ const StateContent = () => {
         {/* Local message with subtle state indicator */}
         <div className="flex-grow">
           <div className="flex items-center space-x-2 mb-2">
-            <h3 className="text-lg font-medium text-gray-800">{stateName} Personal Injury Resources</h3>
+            <h3 className="text-lg font-medium text-gray-800">{effectiveStateName} Personal Injury Resources</h3>
             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
               <svg className="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
@@ -68,29 +97,29 @@ const StateContent = () => {
               Local
             </span>
           </div>
-          <p className="text-gray-600 text-sm mb-3">{content.subheadline}</p>
+          <p className="text-gray-600 text-sm mb-3">{effectiveContent.subheadline}</p>
           
           {/* Key legal information in a subtle, collapsible section */}
           <details className="mb-3 text-sm">
             <summary className="font-medium text-blue-600 cursor-pointer hover:text-blue-700">
-              Important {stateName} Legal Information
+              Important {effectiveStateName} Legal Information
             </summary>
             <div className="mt-2 pl-4 border-l-2 border-blue-100 space-y-2">
               <p className="text-gray-700">
-                <span className="font-medium">Time Limits:</span> {content.statistic}
+                <span className="font-medium">Time Limits:</span> {effectiveContent.statistic}
               </p>
               <p className="text-gray-700">
-                <span className="font-medium">Fault Laws:</span> {content.legalInfo}
+                <span className="font-medium">Fault Laws:</span> {effectiveContent.legalInfo}
               </p>
               <p className="text-gray-700">
-                <span className="font-medium">Damage Considerations:</span> {content.maxDamages}
+                <span className="font-medium">Damage Considerations:</span> {effectiveContent.maxDamages}
               </p>
             </div>
           </details>
           
-          {!isSupported && (
+          {!effectiveIsSupported && (
             <div className="text-xs text-blue-600 mb-3">
-              While {stateName} is outside our primary focus areas, our network may still be able to assist you.
+              While {effectiveStateName} is outside our primary focus areas, our network may still be able to assist you.
             </div>
           )}
         </div>
@@ -111,10 +140,10 @@ const StateContent = () => {
       {/* Subtle state selector */}
       <div className="mt-3 pt-3 border-t border-gray-100">
         <div className="flex items-center text-xs text-gray-500">
-          <span className="mr-2">Not in {stateName}?</span>
+          <span className="mr-2">Not in {effectiveStateName}?</span>
           <select 
             className="text-xs py-1 pl-1 pr-7 border-0 focus:ring-0 focus:outline-none bg-gray-50 rounded"
-            value={stateCode}
+            value={effectiveStateCode}
             onChange={(e) => handleStateChange(e.target.value)}
             aria-label="Select your state"
           >
