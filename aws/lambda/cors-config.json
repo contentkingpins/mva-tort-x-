@@ -10,7 +10,8 @@
     "Authorization",
     "X-Api-Key",
     "X-Amz-Security-Token",
-    "Accept"
+    "Accept",
+    "Origin"
   ],
   "ExposeHeaders": ["Content-Length", "Content-Type"],
   "MaxAge": 86400

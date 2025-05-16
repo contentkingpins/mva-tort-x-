@@ -17,7 +17,7 @@ export const submitLeadToBackend = async (formData) => {
     // In development mode, return simulated success
     if (process.env.NODE_ENV === 'development') {
       console.log('Development mode: Simulating successful backend response');
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       return {
         status: "success",
         data: {
@@ -35,7 +35,7 @@ export const submitLeadToBackend = async (formData) => {
         'Accept': 'application/json',
         'Origin': window.location.origin
       },
-      credentials: 'include',
+      mode: 'cors',
       body: JSON.stringify(formData)
     });
     
