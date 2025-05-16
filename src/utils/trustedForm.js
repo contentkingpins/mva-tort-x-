@@ -1,12 +1,93 @@
 /**
- * TrustedForm integration utility functions
+ * TrustedForm integration utilities
  */
 
 import { isFeatureEnabled } from './featureFlags';
 
-let trustedFormCertificateUrl = null;
-let trustedFormCheckCount = 0;
-const MAX_CHECK_ATTEMPTS = 30; // Limit the number of checks
+let trustedFormCertificate = null;
+let checkInterval = null;
+const MAX_ATTEMPTS = 30;
+let attempts = 0;
+
+/**
+ * Initialize TrustedForm certificate monitoring
+ */
+export const initializeTrustedForm = () => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Development mode: Using simulated TrustedForm certificate');
+    trustedFormCertificate = 'https://cert.trustedform.com/development/test123';
+    return;
+  }
+
+  // Clear any existing interval
+  if (checkInterval) {
+    clearInterval(checkInterval);
+    checkInterval = null;
+  }
+
+  attempts = 0;
+  checkForCertificate();
+};
+
+/**
+ * Check for TrustedForm certificate
+ */
+const checkForCertificate = () => {
+  if (process.env.NODE_ENV === 'development') return;
+
+  console.log('Checking for TrustedForm certificate...');
+  
+  if (window.TrustedForm && window.TrustedForm.certificates && window.TrustedForm.certificates.length > 0) {
+    trustedFormCertificate = window.TrustedForm.certificates[0];
+    console.log('TrustedForm certificate found:', trustedFormCertificate);
+    return;
+  }
+
+  attempts++;
+  
+  if (attempts >= MAX_ATTEMPTS) {
+    console.warn('TrustedForm certificate not found after maximum attempts');
+    return;
+  }
+
+  if (!checkInterval) {
+    checkInterval = setInterval(checkForCertificate, 1000);
+  }
+};
+
+/**
+ * Get the current TrustedForm certificate URL
+ */
+export const getTrustedFormCertificateUrl = () => {
+  if (process.env.NODE_ENV === 'development') {
+    return 'https://cert.trustedform.com/development/test123';
+  }
+  return trustedFormCertificate;
+};
+
+/**
+ * Refresh the TrustedForm certificate
+ */
+export const refreshTrustedFormCertificate = async () => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Development mode: Simulating TrustedForm certificate refresh');
+    await new Promise(resolve => setTimeout(resolve, 500));
+    trustedFormCertificate = 'https://cert.trustedform.com/development/test123';
+    return trustedFormCertificate;
+  }
+
+  return new Promise((resolve) => {
+    attempts = 0;
+    checkForCertificate();
+    
+    const checkComplete = setInterval(() => {
+      if (trustedFormCertificate || attempts >= MAX_ATTEMPTS) {
+        clearInterval(checkComplete);
+        resolve(trustedFormCertificate);
+      }
+    }, 1000);
+  });
+};
 
 /**
  * Initialize TrustedForm script and tracking
@@ -34,14 +115,14 @@ export const initTrustedForm = () => {
     
     // The script is already in index.html, so we just need to check for the field
     const checkForCertificate = () => {
-      trustedFormCheckCount++;
+      attempts++;
       
       try {
         // Check for the hidden input field that TrustedForm creates
         const field = document.querySelector('input[name="xxTrustedFormCertUrl"]');
         if (field && field.value) {
-          trustedFormCertificateUrl = field.value;
-          console.log('TrustedForm certificate found:', trustedFormCertificateUrl);
+          trustedFormCertificate = field.value;
+          console.log('TrustedForm certificate found:', trustedFormCertificate);
           return true;
         }
       } catch (err) {
@@ -49,8 +130,8 @@ export const initTrustedForm = () => {
       }
       
       // Stop checking after max attempts
-      if (trustedFormCheckCount >= MAX_CHECK_ATTEMPTS) {
-        console.warn(`TrustedForm certificate not found after ${MAX_CHECK_ATTEMPTS} attempts. Giving up.`);
+      if (attempts >= MAX_ATTEMPTS) {
+        console.warn(`TrustedForm certificate not found after ${MAX_ATTEMPTS} attempts. Giving up.`);
         return true; // Return true to stop the interval
       }
       
@@ -72,7 +153,7 @@ export const initTrustedForm = () => {
     setTimeout(() => {
       if (intervalId) {
         clearInterval(intervalId);
-        if (!trustedFormCertificateUrl) {
+        if (!trustedFormCertificate) {
           console.warn('TrustedForm certificate not found after timeout. This may be due to browser privacy settings or script blocking.');
         }
       }
@@ -80,97 +161,4 @@ export const initTrustedForm = () => {
   } catch (error) {
     console.error('Error initializing TrustedForm:', error);
   }
-};
-
-/**
- * Get the current TrustedForm certificate URL
- * @returns {string|null} The certificate URL or null if not available
- */
-export const getTrustedFormCertificateUrl = () => {
-  // Skip if the feature is disabled
-  if (!isFeatureEnabled('enableTrustedForm')) {
-    return null;
-  }
-  
-  // Check if we have a cached URL
-  if (trustedFormCertificateUrl) {
-    return trustedFormCertificateUrl;
-  }
-  
-  // Try to get from the hidden field
-  if (typeof document !== 'undefined') {
-    try {
-      const field = document.querySelector('input[name="xxTrustedFormCertUrl"]');
-      if (field && field.value) {
-        // Validate the certificate URL format for security
-        const certUrl = field.value.trim();
-        if (certUrl.startsWith('https://cert.trustedform.com/')) {
-          trustedFormCertificateUrl = certUrl;
-          return trustedFormCertificateUrl;
-        } else {
-          console.warn('Invalid TrustedForm certificate URL format:', certUrl);
-        }
-      }
-    } catch (err) {
-      console.error('Error getting TrustedForm certificate:', err);
-    }
-  }
-  
-  return null;
-};
-
-/**
- * Refresh the TrustedForm certificate (useful before submitting a form)
- * @returns {Promise<string|null>} Promise resolving to certificate URL or null
- */
-export const refreshTrustedFormCertificate = () => {
-  return new Promise((resolve) => {
-    // Skip if the feature is disabled
-    if (!isFeatureEnabled('enableTrustedForm')) {
-      resolve(null);
-      return;
-    }
-    
-    if (typeof document === 'undefined') {
-      resolve(null);
-      return;
-    }
-    
-    try {
-      // Try to get the latest certificate URL from the hidden field
-      const field = document.querySelector('input[name="xxTrustedFormCertUrl"]');
-      if (field && field.value) {
-        const certUrl = field.value.trim();
-        if (certUrl.startsWith('https://cert.trustedform.com/')) {
-          trustedFormCertificateUrl = certUrl;
-          resolve(trustedFormCertificateUrl);
-          return;
-        } else {
-          console.warn('Invalid TrustedForm certificate URL format during refresh:', certUrl);
-        }
-      }
-      
-      // If no field found, check again after a brief delay
-      setTimeout(() => {
-        try {
-          const retryField = document.querySelector('input[name="xxTrustedFormCertUrl"]');
-          if (retryField && retryField.value) {
-            const certUrl = retryField.value.trim();
-            if (certUrl.startsWith('https://cert.trustedform.com/')) {
-              trustedFormCertificateUrl = certUrl;
-            } else {
-              console.warn('Invalid TrustedForm certificate URL format during retry:', certUrl);
-            }
-          }
-        } catch (err) {
-          console.error('Error refreshing TrustedForm certificate:', err);
-        }
-        
-        resolve(trustedFormCertificateUrl);
-      }, 500);
-    } catch (error) {
-      console.error('Error refreshing TrustedForm certificate:', error);
-      resolve(null);
-    }
-  });
 }; 
