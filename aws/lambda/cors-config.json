@@ -1,0 +1,17 @@
+{
+  "AllowOrigins": [
+    "https://main.d3ikvt4e65sxbl.amplifyapp.com",
+    "https://collisioncounselor.com"
+  ],
+  "AllowMethods": ["POST", "OPTIONS"],
+  "AllowHeaders": [
+    "Content-Type",
+    "X-Amz-Date",
+    "Authorization",
+    "X-Api-Key",
+    "X-Amz-Security-Token",
+    "Accept"
+  ],
+  "ExposeHeaders": ["Content-Length", "Content-Type"],
+  "MaxAge": 86400
+} 

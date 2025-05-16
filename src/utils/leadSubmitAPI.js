@@ -3,7 +3,7 @@
  */
 
 // API Gateway endpoint for lead submissions
-const API_ENDPOINT = process.env.REACT_APP_LEAD_API_ENDPOINT || 'https://[YOUR-API-ID].execute-api.[REGION].amazonaws.com/prod/leads';
+const API_ENDPOINT = 'https://01o7syn1nb.execute-api.us-east-1.amazonaws.com/prod/leads';
 
 /**
  * Submit lead data to our backend API
@@ -14,13 +14,28 @@ export const submitLeadToBackend = async (formData) => {
   try {
     console.log('Submitting lead to backend:', formData);
     
+    // In development mode, return simulated success
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Development mode: Simulating successful backend response');
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+      return {
+        status: "success",
+        data: {
+          lead_id: `LEAD-${Date.now()}`,
+          message: "Lead successfully submitted (simulated)"
+        }
+      };
+    }
+    
     // Make API request
     const response = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'Origin': window.location.origin
       },
+      credentials: 'include',
       body: JSON.stringify(formData)
     });
     
@@ -48,14 +63,14 @@ export const submitLeadToBackend = async (formData) => {
   } catch (error) {
     console.error('Error submitting to backend API:', error);
     
-    // In development mode, return a simulated success for testing
+    // In development mode, return simulated success even on error
     if (process.env.NODE_ENV === 'development') {
-      console.log('Development mode: Simulating successful backend response');
+      console.log('Development mode: Converting error to success response');
       return {
         status: "success",
         data: {
           lead_id: `LEAD-${Date.now()}`,
-          message: "Lead successfully submitted (simulated)"
+          message: "Lead successfully submitted (simulated despite error)"
         }
       };
     }
